@@ -9,9 +9,11 @@ export class LeaveBalanceController {
   async getLeaveBalance(req: Request, res: Response) {
     const { clientId } = req.client;
     const { employeeId } = req.employee; // Employee making the request
+    const query = req.query;
     const result = await leaveBalanceService.getLeaveBalance(
+      clientId,
       employeeId,
-      clientId
+      query
     );
     res.status(200).json(result);
   }

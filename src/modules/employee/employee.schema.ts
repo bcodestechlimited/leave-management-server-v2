@@ -64,10 +64,7 @@ class EmployeeSchemas {
 
   resetPassword = z
     .object({
-      token: z
-        .string({ required_error: "Token is required" })
-        .email("Please provide a token"),
-
+      token: z.string({ required_error: "Token is required" }),
       password: z
         .string({ required_error: "Password is required" })
         .min(3, "Password must be at least 3 characters long"),
@@ -85,7 +82,10 @@ class EmployeeSchemas {
 
   employeeProfileUpdate = z
     .object({
-      name: z.string().optional().describe("Name must be a string."),
+      firstname: z.string().optional().describe("Name must be a string."),
+      middlename: z.string().optional().describe("Name must be a string."),
+      surname: z.string().optional().describe("Name must be a string."),
+      email: z.string().email("Please provide a valid email address"),
       jobRole: z.string().optional().describe("Job role must be a string."),
       branch: z.string().optional().describe("Branch must be a string."),
       gender: z

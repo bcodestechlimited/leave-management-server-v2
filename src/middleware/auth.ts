@@ -17,7 +17,7 @@ const isAuth = asyncWrapper(
     }
 
     const payload = verifyToken(token);
-    
+
     if (payload?.roles.includes("admin")) {
       req.admin = payload;
     }
@@ -35,7 +35,7 @@ const isAuth = asyncWrapper(
     }
     //Holds whichever user is logged in
     req.user = payload;
-    // console.log({ user: req.user });
+    // console.log({ user: req.user, employee: req.employee, payload });
 
     next();
   }
@@ -53,7 +53,7 @@ const isSuperAdmin = asyncWrapper(async (req, res, next) => {
 const isAdmin = asyncWrapper(
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.user) {
-      throw ApiError.unauthorized("Admins Only");
+      throw ApiError.unauthorized("Unauthorized");
     }
     if (!req.user || !req.user.roles.includes("admin")) {
       throw ApiError.forbidden("Admins Only");
@@ -65,16 +65,34 @@ const isAdmin = asyncWrapper(
 
 //Checks if the user/employee is an employee
 const isEmployee = asyncWrapper(async (req, res, next) => {
-  if (!req?.user?.isEmployee) {
-    throw ApiError.unauthorized("Employees Only");
+  if (!req.user) {
+    throw ApiError.unauthorized("Unauthorized");
+  }
+
+  if (req.user.roles.includes("admin")) {
+    next();
+  }
+
+  if (!req.user || !req.user.roles.includes("employee")) {
+    throw ApiError.forbidden("Employees Only");
   }
   next();
 });
 
 //Checks if the user is a Client Admin
 const isClientAdmin = asyncWrapper(async (req, res, next) => {
-  if (!req?.user?.isClientAdmin || !req?.user?.isAdmin) {
-    throw ApiError.unauthorized("Client Admins Only");
+  if (!req.user) {
+    throw ApiError.unauthorized("Unauthorized");
+  }
+
+  if (req.user.roles.includes("admin")) {
+    return next();
+  }
+
+  console.log("Innnn");
+
+  if (!req.user || !req.user.roles.includes("client-admin")) {
+    throw ApiError.forbidden("Admins Only");
   }
   next();
 });

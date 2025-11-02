@@ -22,11 +22,8 @@ class LeaveSchemas {
           message: "Invalid resumptionDate",
         }),
 
-      duration: z
-        .number({
-          required_error: "duration is required",
-          invalid_type_error: "duration must be a number",
-        })
+      duration: z.coerce
+        .number()
         .int()
         .min(0, "duration must be a positive integer"),
 

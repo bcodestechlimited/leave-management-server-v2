@@ -10,7 +10,7 @@ const router = Router();
 
 router
   .route("/")
-  .get(clientMiddleware, isAuth, employeeController.getEmployee)
+  .get(clientMiddleware, isAuth, employeeController.getEmployees)
   .all(methodNotAllowed);
 
 //Authentication
@@ -22,7 +22,7 @@ router
     isAuth,
     isEmployee,
     validateBody(employeeSchemas.employeeProfileUpdate),
-    employeeController.updateEmployee
+    employeeController.updateAuthEmployee
   )
   .all(methodNotAllowed);
 
@@ -77,6 +77,17 @@ router
     isAuth,
     isClientAdmin,
     employeeController.inviteAndAdd
+  )
+  .all(methodNotAllowed);
+
+router
+  .route("/add/line-manager")
+  .post(
+    clientMiddleware,
+    isAuth,
+    isClientAdmin,
+    // validateBody(employeeSchemas.addLineManager),
+    employeeController.addLineManager
   )
   .all(methodNotAllowed);
 

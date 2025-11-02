@@ -46,7 +46,7 @@ export class ClientController {
   // ============================
   // Public Facing
   // ============================
-  async getPublcClient(req: Request, res: Response) {
+  async validateClient(req: Request, res: Response) {
     const clientId = req.params.clientId;
     const result = await clientService.getClient(clientId as string);
     res.status(200).json(result);

@@ -1,10 +1,17 @@
 import { ApiError, ApiSuccess } from "@/utils/responseHandler";
 import Employee from "../employee/employee.model";
-import mongoose from "mongoose";
+import mongoose, { Types } from "mongoose";
 import LeaveBalance from "./leave-balance.model";
+import type { IQueryParams } from "@/shared/interfaces/query.interface";
 
 class LeaveBalanceService {
-  async getLeaveBalance(employeeId: string, clientId: string) {
+  async getLeaveBalance(
+    clientId: string,
+    employeeId: string,
+    query: IQueryParams
+  ) {
+    const { search, limit = 10 } = query;
+
     if (!mongoose.Types.ObjectId.isValid(employeeId)) {
       throw ApiError.badRequest("Invalid employeeId provided.");
     }
@@ -22,22 +29,67 @@ class LeaveBalanceService {
       throw ApiError.notFound("Employee not found");
     }
 
-    const leaveBalances = await employee.getLeaveBalances(
-      String(employeeId),
-      String(clientId)
-    );
+    console.log({ limit });
 
-    const newBalances = LeaveBalance.find({ clientId, employeeId }).populate([
+    const leaveBalances = await LeaveBalance.aggregate([
       {
-        path: "leaveTypeId",
-        select: "name defaultBalance",
+        $match: {
+          clientId: new Types.ObjectId(clientId),
+          employeeId: new Types.ObjectId(employeeId),
+        },
+      },
+      {
+        $lookup: {
+          from: "leavetypes",
+          localField: "leaveTypeId",
+          foreignField: "_id",
+          as: "leaveType",
+        },
+      },
+      { $unwind: "$leaveType" },
+      ...(search
+        ? [{ $match: { "leaveType.name": { $regex: search, $options: "i" } } }]
+        : []),
+      { $limit: Number(limit) },
+      {
+        $project: {
+          _id: 1,
+          balance: 1,
+          "leaveType._id": 1,
+          "leaveType.name": 1,
+          "leaveType.defaultBalance": 1,
+        },
       },
     ]);
 
+    // const newBalances = LeaveBalance.find({ clientId, employeeId }).populate([
+    //   {
+    //     path: "leaveTypeId",
+    //     select: "name defaultBalance",
+    //   },
+    // ]);
+
+    const filteredLeaveBalance = leaveBalances.filter((leaveBalance) => {
+      if (
+        employee.gender === "female" &&
+        leaveBalance.leaveType.name.includes("paternity")
+      )
+        return false;
+      if (
+        employee.gender === "male" &&
+        leaveBalance.leaveType.name.includes("maternity")
+      )
+        return false;
+      if (leaveBalance.leaveType.name.includes("exam")) return false;
+
+      return true;
+    });
+
     // Return empty array if no balances are found
     return ApiSuccess.ok("Leave balance retrieved successfully", {
-      leaveBalance: leaveBalances.length > 0 ? leaveBalances : [],
-      newBalances,
+      // leaveBalance: leaveBalances.length > 0 ? leaveBalances : [],
+      // newBalances,
+      leaveBalances: filteredLeaveBalance,
     });
   }
 

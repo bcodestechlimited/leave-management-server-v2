@@ -95,7 +95,7 @@ class AdminService {
     }
 
     const token = generateToken({
-      employee: employee._id,
+      employeeId: employee._id,
       isAdmin: employee.isAdmin,
       isEmployee: true,
       roles: employee.isAdmin ? ["admin", "employee"] : ["employee"],

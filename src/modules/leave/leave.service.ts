@@ -23,6 +23,8 @@ class LeaveService {
     const { leaveTypeId, startDate, resumptionDate, duration, reason } =
       leaveData;
 
+    console.log({ leaveTypeId, employeeId });
+
     // Validate leave balance
     let leaveBalance = await LeaveBalance.findOne({
       employeeId,
@@ -671,11 +673,13 @@ class LeaveService {
   }
 
   async updateLeaveRequestBySuperAdmin(
+    clientId: string,
     leaveId: string,
-    leaveRequestData: any,
-    clientId: string
+    leaveRequestData: any
   ) {
     const { status, reason } = leaveRequestData;
+
+    console.log({ leaveId, clientId });
 
     // Find the leave request
     const leaveRequest = await Leave.findOne({
@@ -815,6 +819,10 @@ class LeaveService {
       throw ApiError.badRequest("Client ID not provided.");
     }
 
+    if (!startDate || !endDate) {
+      throw ApiError.badRequest("Start date and end date are required.");
+    }
+
     const leaveRequests = await Leave.find({
       clientId,
       createdAt: {
@@ -930,7 +938,7 @@ class LeaveService {
     console.log({ buffer });
     return buffer;
 
-    return ApiSuccess.ok("Leave balance retrieved successfully");
+    return ApiSuccess.ok("Leaves retrieved successfully");
   }
 
   async getLeaveRequestAnalytics(clientId: string, year: string) {

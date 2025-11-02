@@ -3,9 +3,7 @@ import logger from "./utils/logger";
 import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
-import cookieParser from "cookie-parser";
 import fileUpload from "express-fileupload";
-import { createServer } from "http";
 import connectDB from "./config/connectDB";
 import notFound from "./middleware/notFound";
 import { errorMiddleware } from "./middleware/error";
@@ -20,6 +18,8 @@ import employeeRoutes from "./modules/employee/employee.routes";
 import leaveRoutes from "./modules/leave/leave.routes";
 import leaveTypeRoutes from "./modules/leave-type/leave-type.routes";
 import leaveBalanceRoutes from "./modules/leave-balance/leave-balance.routes";
+import levelRoutes from "./modules/level/level.routes";
+import linkRoutes from "./modules/link/link.routes";
 
 // import { initializeSocket } from "./socket";
 
@@ -54,6 +54,8 @@ app.use("/api/v1/employee", employeeRoutes);
 app.use("/api/v1/leave", leaveRoutes);
 app.use("/api/v1/leave-type", leaveTypeRoutes);
 app.use("/api/v1/leave-balance", leaveBalanceRoutes);
+app.use("/api/v1/level", levelRoutes);
+app.use("/api/v1/link", linkRoutes);
 
 app.use(helmet());
 app.use(notFound);

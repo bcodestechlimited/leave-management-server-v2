@@ -141,7 +141,7 @@ class ClientService {
 
     const token = generateToken({
       clientId: client._id,
-      roles: ["client"],
+      roles: ["client-admin"],
     });
 
     client.password = undefined;

@@ -19,7 +19,7 @@
 //     console.log("📦 Found LeaveMS-Live. Copying data to LeaveMS...");
 
 //     const sourceDb = client.db("LeaveMS-Live");
-//     const targetDb = client.db("LeaveMS");
+//     const targetDb = client.db("LeaveMS-Live-v2");
 
 //     const collections = await sourceDb.listCollections().toArray();
 
@@ -58,6 +58,15 @@
 // }
 
 // copyDatabase();
+
+// // Mapping for renamed collections
+// const COLLECTION_MAP: Record<string, string> = {
+//   leavehistories: "leaves", // old → new
+//   employeeleavebalances: "leavebalances", // old → new
+//   tenants: "clients", // old → new
+// };
+
+// ========================================================================================================
 
 // import { env } from "@/config/env.config";
 // import { MongoClient, ObjectId } from "mongodb";
@@ -190,6 +199,9 @@
 // }
 
 // copyDatabase();
+
+// ================================================================================
+
 
 import { env } from "@/config/env.config";
 import { MongoClient } from "mongodb";

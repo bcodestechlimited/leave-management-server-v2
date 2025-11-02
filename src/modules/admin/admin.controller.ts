@@ -91,13 +91,13 @@ export class AdminController {
     res.status(200).json(result);
   }
   async updateLeaveRequest(req: Request, res: Response) {
-    const { clientId } = req.query;
+    const { clientId } = req.client;
     const leaveRequestData = req.body;
     const { leaveRequestId } = req.params;
     const result = await leaveService.updateLeaveRequestBySuperAdmin(
+      clientId as string,
       leaveRequestId as string,
-      leaveRequestData,
-      clientId as string
+      leaveRequestData
     );
     res.status(200).json(result);
   }

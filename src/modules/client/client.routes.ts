@@ -101,10 +101,10 @@ router
 //   .get(clientMiddleware, isAuth, isClientAdmin, generateMonthlyLeaveReports)
 //   .all(methodNotAllowed);
 
-// //Public
-// router
-//   .route("/:clientId")
-//   .get(validateMongoIdParam("clientId"), getClient)
-//   .all(methodNotAllowed);
+//Public
+router
+  .route("/:clientId")
+  .get(clientController.validateClient)
+  .all(methodNotAllowed);
 
 export default router;

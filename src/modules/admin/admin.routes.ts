@@ -110,6 +110,7 @@ router
   .route("/leave/:leaveRequestId")
   .get(isAuth, isAdmin, adminController.getSingleLeaveRequest) // Get a specific leave request
   .put(
+    clientMiddleware,
     isAuth,
     isAdmin,
     validateBody(leaveSchemas.leaveRequestUpdate),

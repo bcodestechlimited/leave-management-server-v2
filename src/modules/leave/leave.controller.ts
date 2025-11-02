@@ -121,7 +121,7 @@ export class LeaveController {
 
   async getMonthlyLeaveRequestReport(req: Request, res: Response) {
     const { clientId } = req.client;
-    const query = req.query as {startDate: string, endDate: string}
+    const query = req.query as { startDate: string; endDate: string };
     const result = await leaveService.getMonthlyLeaveReport(clientId, query);
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(

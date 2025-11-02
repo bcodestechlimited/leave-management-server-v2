@@ -3,6 +3,11 @@ import type { IEmployee } from "./employee.interface";
 
 const employeeSchema: Schema<IEmployee> = new Schema(
   {
+    clientId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Client",
+      required: true,
+    },
     staffId: {
       type: String,
       default: null,

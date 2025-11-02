@@ -52,7 +52,10 @@ export class EmployeeController {
   async getAuthEmployee(req: Request, res: Response) {
     const { clientId } = req.client;
     const { employeeId } = req.employee;
-    const result = await employeeService.getEmployee(employeeId, clientId);
+
+    console.log({ clientId, employeeId });
+
+    const result = await employeeService.getEmployee(clientId, employeeId);
     res.status(200).json(result);
   }
 

@@ -44,15 +44,9 @@ export class EmployeeService {
 
     employee.password = undefined;
 
-    const leaveBalances = await employee.getLeaveBalances(
-      String(employee._id),
-      String(employee.clientId)
-    );
-
     return ApiSuccess.created("Login successful", {
       employee,
       token,
-      leaveBalances: leaveBalances.length > 0 ? leaveBalances : [],
     });
   }
 
@@ -266,7 +260,7 @@ export class EmployeeService {
   }
 
   // ---------------- EMPLOYEES ----------------
-  async getEmployee(employeeId: string, clientId: string) {
+  async getEmployee(clientId: string, employeeId: string) {
     const employee = await Employee.findOne({
       _id: employeeId,
       clientId,
@@ -279,11 +273,11 @@ export class EmployeeService {
 
     if (!employee) throw ApiError.notFound("Employee not found");
 
-    const leaveBalances = await employee.getLeaveBalances(employeeId, clientId);
+    // const leaveBalances = await employee.getLeaveBalances(employeeId, clientId);
 
     return ApiSuccess.ok("Employee Retrieved Successfully", {
       employee,
-      leaveBalances,
+      // leaveBalances,
     });
   }
 
@@ -371,11 +365,11 @@ export class EmployeeService {
 
     if (!employee) throw ApiError.badRequest("Employee not found");
 
-    const leaveBalances = await employee.getLeaveBalances(employeeId, clientId);
+    // const leaveBalances = await employee.getLeaveBalances(employeeId, clientId);
 
     return ApiSuccess.ok("Profile Updated Successfully", {
       employee,
-      leaveBalances,
+      // leaveBalances,
     });
   }
 
@@ -508,6 +502,8 @@ export class EmployeeService {
     } catch {
       throw ApiError.badRequest("Invalid or expired link");
     }
+
+    console.log({ token, newPassword });
 
     const passwordReset = await otpService.getOTP({
       email: decoded.email as string,

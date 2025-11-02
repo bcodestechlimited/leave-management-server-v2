@@ -42,6 +42,16 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/report")
+  .get(
+    clientMiddleware,
+    isAuth,
+    isClientAdmin,
+    leaveController.getMonthlyLeaveRequestReport
+  )
+  .all(methodNotAllowed);
+
+router
   .route("/:leaveRequestId")
   .get(clientMiddleware, isAuth, leaveController.getSingleLeaveRequest) // Get a specific leave request
   .put(

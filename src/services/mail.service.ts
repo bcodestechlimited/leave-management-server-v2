@@ -28,7 +28,7 @@ class MailService {
     this.transporter = transporter;
   }
 
-  defaultSender = env.ADMIN_EMAIL || "";
+  defaultSender = env.ADMIN_EMAIL || "support@hrcoreapp.com";
 
   private static loadTemplate(templateName: string, data: object): string {
     const templatePath = path.join(
