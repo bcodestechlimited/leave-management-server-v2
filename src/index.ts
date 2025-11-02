@@ -29,11 +29,12 @@ const port = env.PORT || 3000;
 
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "http://localhost:5173",
-      "https://leave-management-client-navy.vercel.app/",
-    ],
+    // origin: [
+    //   "http://localhost:3000",
+    //   "http://localhost:5173",
+    //   "https://leave-management-client-navy.vercel.app/",
+    // ],
+    origin: "*",
   })
 );
 // app.use(cookieParser());
