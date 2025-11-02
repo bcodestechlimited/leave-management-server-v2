@@ -11,7 +11,7 @@ const connectDB = async () => {
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
-      dbName: env.NODE_ENV == "development" ? "LeaveMS" : "LeaveMS-Live",
+      dbName: env.NODE_ENV == "development" ? "LeaveMS" : "LeaveMS-Live-v2",
     });
     logger.info("DB Connected!");
   } catch (error) {
