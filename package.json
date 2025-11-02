@@ -1,0 +1,59 @@
+{
+  "name": "leave-management-v2",
+  "version": "1.0.0",
+  "module": "index.ts",
+  "type": "module",
+  "main": "src/index.ts",
+  "private": true,
+  "scripts": {
+    "build": "bun build ./src/index.ts --outdir=dist --minify --target=bun",
+    "start": "bun run build && bun run dist/index.js",
+    "dev": "nodemon --watch src --ext ts --exec bun run /src/index.ts | pino-pretty",
+    "test": "bun test",
+    "lint": "bun run lint",
+    "scripts:copy-db": "bun run src/scripts/copy-db.ts",
+    "script:test": "bun run src/scripts/test.ts",
+    "scripts:create-module": "bun run /src/scripts/create-module.ts"
+  },
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@types/cookie-parser": "^1.4.8",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.1",
+    "@types/express-fileupload": "^1.5.1",
+    "@types/handlebars": "^4.1.0",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/morgan": "^1.9.9",
+    "@types/nodemailer": "^6.4.17",
+    "@types/otp-generator": "^4.0.2",
+    "agenda": "^5.0.0",
+    "axios": "^1.10.0",
+    "cloudinary": "^2.6.0",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.5",
+    "csv-parser": "^3.2.0",
+    "envalid": "^8.0.0",
+    "exceljs": "^4.4.0",
+    "express": "^5.1.0",
+    "express-fileupload": "^1.5.1",
+    "googleapis": "^153.0.0",
+    "handlebars": "^4.7.8",
+    "helmet": "^8.1.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.13.1",
+    "morgan": "^1.10.0",
+    "nodemailer": "^6.10.0",
+    "nodemon": "^3.1.10",
+    "otp-generator": "^4.0.1",
+    "pino": "^9.6.0",
+    "pino-http": "^10.4.0",
+    "pino-pretty": "^13.0.0",
+    "socket.io": "^4.8.1",
+    "zod": "^3.24.2"
+  }
+}
