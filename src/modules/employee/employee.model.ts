@@ -1,5 +1,8 @@
-import mongoose, { Schema } from "mongoose";
+import mongoose, { Schema, type CallbackError } from "mongoose";
 import type { IEmployee } from "./employee.interface";
+import Level from "../level/level.model";
+import LeaveBalance from "../leave-balance/leave-balance.model";
+import logger from "@/utils/logger";
 
 const employeeSchema: Schema<IEmployee> = new Schema(
   {
@@ -116,255 +119,95 @@ const employeeSchema: Schema<IEmployee> = new Schema(
   { timestamps: true }
 );
 
-// employeeSchema.methods.getLeaveBalances = async function (
-//   employeeId: string,
-//   clientId: string
-// ) {
-//   try {
-//     const leaveBalances = await EmployeeLeaveBalance.aggregate([
-//       {
-//         $match: {
-//           employeeId: mongoose.Types.ObjectId.createFromHexString(employeeId),
-//           clientId: mongoose.Types.ObjectId.createFromHexString(clientId),
-//         },
-//       },
-//       {
-//         $lookup: {
-//           from: "leavetypes",
-//           localField: "leaveTypeId",
-//           foreignField: "_id",
-//           as: "leaveTypeDetails",
-//         },
-//       },
-//       {
-//         $unwind: {
-//           path: "$leaveTypeDetails",
-//           preserveNullAndEmptyArrays: true,
-//         },
-//       },
-//       {
-//         $project: {
-//           _id: 0,
-//           leaveTypeId: 1,
-//           balance: 1,
-//           "leaveTypeDetails.name": 1,
-//           "leaveTypeDetails.defaultBalance": 1,
-//         },
-//       },
-//     ]);
+// ------------------------------------------------------
+// Runs Only when level changes
+// ------------------------------------------------------
+employeeSchema.pre("save", async function (next) {
+  if (!this.isModified("levelId") || !this.levelId) return next();
 
-//     return (
-//       leaveBalances?.filter(
-//         (leaveBalance: { leaveTypeDetails: { name: string } }) => {
-//           const name = leaveBalance.leaveTypeDetails.name.toLowerCase();
+  try {
+    await updateLeaveBalances(this);
+    next();
+  } catch (error: any) {
+    console.error("Error in pre-save leave balance update:", error);
+    next(error);
+  }
+});
 
-//           // Exclude based on gender and universally exclude exam leaves
-//           if (name.includes("exam")) return false;
+// ------------------------------------------------------
+// Runs Only when level changes through findOneAndUpdate
+// ------------------------------------------------------
+employeeSchema.pre("findOneAndUpdate", async function (next) {
+  const update = this.getUpdate() as mongoose.UpdateQuery<IEmployee> | null;
 
-//           if (this.gender === "female" && name.includes("paternity"))
-//             return false;
-//           if (this.gender === "male" && name.includes("maternity"))
-//             return false;
+  if (!update) return next();
 
-//           return true;
-//         }
-//       ) || []
-//     );
+  // Handle both direct and $set operations
+  const newLevelId = update.levelId || (update.$set && update.$set.levelId);
 
-//     // return (
-//     //   leaveBalances?.filter(
-//     //     (leaveBalance) =>
-//     //       (this.gender === "female" &&
-//     //         !leaveBalance.leaveTypeDetails.name
-//     //           .toLowerCase()
-//     //           .includes("paternity")) ||
-//     //       (this.gender === "male" &&
-//     //         !leaveBalance.leaveTypeDetails.name
-//     //           .toLowerCase()
-//     //           .includes("maternity"))
-//     //   ) || []
-//     // );
-//   } catch (error) {
-//     throw error;
-//   }
-// };
+  if (!newLevelId) return next();
 
-// // Runs Only when level changes
-// employeeSchema.pre("save", async function (next) {
-//   if (!this.isModified("levelId") || !this.levelId) return next();
+  console.log({ newLevelId });
 
-//   try {
-//     await updateLeaveBalances(this);
-//     next();
-//   } catch (error: any) {
-//     console.error("Error in pre-save leave balance update:", error);
-//     next(error);
-//   }
-// });
+  try {
+    const employee = await this.model.findOne(this.getQuery());
 
-// // Runs Only when level changes through findOneAndUpdate
-// employeeSchema.pre("findOneAndUpdate", async function (next) {
-//   const update = this.getUpdate();
+    if (!employee) return next();
 
-//   if (!update || !update.levelId) return next();
+    const currentLevelId = employee.levelId?.toString();
+    const incomingLevelId = newLevelId?.toString();
 
-//   try {
-//     const employee = await this.model.findOne(this.getQuery());
+    // Only proceed if levelId is actually changing
+    if (incomingLevelId && incomingLevelId !== currentLevelId) {
+      await updateLeaveBalances(employee, incomingLevelId);
+    }
 
-//     if (employee) {
-//       if (update?.levelId != null) {
-//         const levelIdString = update.levelId.toString();
-//         await updateLeaveBalances(employee, levelIdString);
+    next();
+  } catch (error: any) {
+    console.error("Error in pre-findOneAndUpdate leave balance update:", error);
+    next(error);
+  }
+});
 
-//         next();
-//       }
-//       // await updateLeaveBalances(employee, update.levelId.toString());
-//     }
-//     next();
-//   } catch (error) {
-//     console.error("Error in pre-findOneAndUpdate leave balance update:", error);
-//     next(error);
-//   }
-// });
+async function updateLeaveBalances(
+  employee: IEmployee,
+  newLevelId = employee.levelId
+) {
+  console.log({
+    levelId: String(employee.levelId),
+    newLevelId,
+  });
 
-// // Function to update leave balances for an employee
-// async function updateLeaveBalances(employee, newLevelId = employee.levelId) {
-//   console.log({
-//     levelId: String(employee.levelId),
-//     newLevelId,
-//   });
+  if (newLevelId === null || String(newLevelId) === String(employee.levelId)) {
+    logger.info(
+      `No change in levelId for employee, Employee levelId: ${employee.levelId} newLevelId: ${newLevelId} /n Skipping leave balance update.`
+    );
+    return;
+  }
 
-//   if (newLevelId === null || String(newLevelId) === String(employee.levelId)) {
-//     console.log(
-//       `No change in levelId for employee, Employee levelId: ${employee.levelId} newLevelId: ${newLevelId}`
-//     );
-//     return;
-//   }
+  const newLevel = await Level.findById(newLevelId).populate("leaveTypes");
+  if (!newLevel) {
+    console.log("No level found for levelId:", newLevelId);
+    return;
+  }
 
-//   const newLevel = await Level.findById(newLevelId).populate("leaveTypes");
-//   if (!newLevel) {
-//     console.log("No level found for levelId:", newLevelId);
-//     return;
-//   }
+  const newLevelLeaves = newLevel.leaveTypes || [];
 
-//   const newLevelLeaves = newLevel.leaveTypes || [];
+  // Remove old balances for the employee
+  await LeaveBalance.deleteMany({ employeeId: employee._id });
 
-//   // Remove old balances for the employee
-//   await EmployeeLeaveBalance.deleteMany({ employeeId: employee._id });
+  // Insert new leave balances
+  const newLeaveBalances = newLevelLeaves.map((leave: any) => ({
+    clientId: employee.clientId,
+    employeeId: employee._id,
+    leaveTypeId: leave._id,
+    balance: leave.defaultBalance,
+  }));
 
-//   // Insert new leave balances
-//   const newLeaveBalances = newLevelLeaves.map((leave: any) => ({
-//     clientId: employee.clientId,
-//     employeeId: employee._id,
-//     leaveTypeId: leave._id,
-//     balance: leave.defaultBalance,
-//   }));
+  console.log(`-------Level Updated-----------`);
 
-//   console.log(`-------Level Updated-----------`);
-
-//   await EmployeeLeaveBalance.insertMany(newLeaveBalances);
-// }
-
-// employeeSchema.statics.getEmployeeStats = async function () {
-//   try {
-//     const result = await this.aggregate([
-//       {
-//         $facet: {
-//           employeeStats: [
-//             {
-//               $group: {
-//                 _id: "$levelId",
-//                 count: { $sum: 1 },
-//               },
-//             },
-//           ],
-//           levels: [
-//             { $match: { $expr: { $ne: ["$levelId", null] } } },
-//             {
-//               $lookup: {
-//                 from: "levels",
-//                 localField: "levelId",
-//                 foreignField: "_id",
-//                 as: "levelInfo",
-//               },
-//             },
-//             { $unwind: "$levelInfo" },
-//             {
-//               $group: {
-//                 _id: "$levelInfo._id",
-//                 name: { $first: "$levelInfo.name" },
-//               },
-//             },
-//           ],
-//         },
-//       },
-//       {
-//         $project: {
-//           byLevel: {
-//             $map: {
-//               input: "$levels",
-//               as: "level",
-//               in: {
-//                 levelId: "$$level._id",
-//                 levelName: "$$level.name",
-//                 totalEmployees: {
-//                   $ifNull: [
-//                     {
-//                       $arrayElemAt: [
-//                         "$employeeStats.count",
-//                         {
-//                           $indexOfArray: ["$employeeStats._id", "$$level._id"],
-//                         },
-//                       ],
-//                     },
-//                     0,
-//                   ],
-//                 },
-//               },
-//             },
-//           },
-//           totalEmployees: { $sum: "$employeeStats.count" },
-//         },
-//       },
-//     ]);
-
-//     // const result = await this.aggregate([
-//     //   {
-//     //     $match: { levelId: { $ne: null } }, // Exclude null levelIds
-//     //   },
-//     //   {
-//     //     $group: {
-//     //       _id: "$levelId",
-//     //       count: { $sum: 1 },
-//     //     },
-//     //   },
-//     //   {
-//     //     $lookup: {
-//     //       from: "levels", // The name of the Level collection
-//     //       localField: "_id", // The _id from the previous $group stage (levelId)
-//     //       foreignField: "_id", // The _id field in the Level collection
-//     //       as: "levelInfo", // The name of the array field to store the populated data
-//     //     },
-//     //   },
-//     //   // {
-//     //   //   $unwind: "$levelInfo", // Flatten the array to get levelInfo as an object
-//     //   // },
-//     //   // {
-//     //   //   $project: {
-//     //   //     _id: 0, // Exclude the default _id field
-//     //   //     levelId: "$_id", // Include the levelId from the grouping stage
-//     //   //     count: 1, // Include the count
-//     //   //     levelName: "$levelInfo.name", // Include the name of the level
-//     //   //   },
-//     //   // },
-//     // ]);
-
-//     return result[0] || { byLevel: [], totalEmployees: 0 };
-//   } catch (error) {
-//     console.error("Error in getEmployeeStats:", error);
-//     throw error;
-//   }
-// };
+  await LeaveBalance.insertMany(newLeaveBalances);
+}
 
 const Employee = mongoose.model<IEmployee>("Employee", employeeSchema);
 

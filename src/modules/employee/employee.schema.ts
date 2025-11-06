@@ -80,6 +80,55 @@ class EmployeeSchemas {
     })
     .strict();
 
+  updateEmployeeByAdmin = z
+    .object({
+      _id: z.string().optional().describe("ID must be a string."),
+      staffId: z.string().optional().describe("Staff ID must be a string."),
+      firstname: z.string().optional().describe("Name must be a string."),
+      middlename: z.string().optional().describe("Name must be a string."),
+      surname: z.string().optional().describe("Name must be a string."),
+      email: z.string().email("Please provide a valid email address"),
+      jobRole: z.string().optional().describe("Job role must be a string."),
+      branch: z.string().optional().describe("Branch must be a string."),
+      gender: z
+        .enum(["male", "female"])
+        .optional()
+        .describe("Gender must be one of: male, female"),
+      lineManager: z
+        .string()
+        .nullable()
+        .optional()
+        .refine(
+          (val) =>
+            val === null || val === undefined || /^[0-9a-fA-F]{24}$/.test(val),
+          {
+            message: "Line Manager must be a valid MongoDB ID.",
+          }
+        ),
+      reliever: z
+        .string()
+        .nullable()
+        .optional()
+        .refine(
+          (val) =>
+            val === null || val === undefined || /^[0-9a-fA-F]{24}$/.test(val),
+          {
+            message: "Reliever must be a valid MongoDB ID.",
+          }
+        ),
+      levelId: z
+        .string()
+        .optional()
+        .refine((val) => val === undefined || /^[0-9a-fA-F]{24}$/.test(val), {
+          message: "Level ID must be a valid MongoDB ID.",
+        }),
+      isAdmin: z
+        .boolean()
+        .optional()
+        .describe("isAdmin must be a boolean value (true or false)"),
+    })
+    .strict();
+
   employeeProfileUpdate = z
     .object({
       firstname: z.string().optional().describe("Name must be a string."),
