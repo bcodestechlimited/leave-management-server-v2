@@ -114,4 +114,15 @@ router
   )
   .all(methodNotAllowed);
 
+router
+  .route("/:employeeId/client")
+  .put(
+    clientMiddleware,
+    isAuth,
+    isClientAdmin,
+    validateBody(employeeSchemas.updateEmployeeByAdmin),
+    employeeController.updateEmployee
+  )
+  .all(methodNotAllowed);
+
 export default router;

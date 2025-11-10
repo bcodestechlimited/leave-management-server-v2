@@ -1,63 +1,63 @@
-// import { env } from "@/config/env.config";
-// import { MongoClient } from "mongodb";
-// async function copyDatabase() {
-//   const client = new MongoClient(env.MONGODB_URI);
+import { env } from "@/config/env.config";
+import { MongoClient } from "mongodb";
+async function copyDatabase() {
+  const client = new MongoClient(env.MONGODB_URI);
 
-//   try {
-//     await client.connect();
-//     console.log("✅ Connected to MongoDB");
+  try {
+    await client.connect();
+    console.log("✅ Connected to MongoDB");
 
-//     const adminDb = client.db().admin();
-//     const { databases } = await adminDb.listDatabases();
-//     const dbNames = databases.map((db) => db.name);
+    const adminDb = client.db().admin();
+    const { databases } = await adminDb.listDatabases();
+    const dbNames = databases.map((db) => db.name);
 
-//     if (!dbNames.includes("LeaveMS-Live")) {
-//       console.log("❌ Database LeaveMS-Live not found.");
-//       return;
-//     }
+    if (!dbNames.includes("LeaveMS-Live-v2")) {
+      console.log("❌ Database LeaveMS-Live not found.");
+      return;
+    }
 
-//     console.log("📦 Found LeaveMS-Live. Copying data to LeaveMS...");
+    console.log("📦 Found LeaveMS-Live. Copying data to LeaveMS...");
 
-//     const sourceDb = client.db("LeaveMS-Live");
-//     const targetDb = client.db("LeaveMS-Live-v2");
+    const sourceDb = client.db("LeaveMS-Live-v2");
+    const targetDb = client.db("LeaveMS-Stagging");
 
-//     const collections = await sourceDb.listCollections().toArray();
+    const collections = await sourceDb.listCollections().toArray();
 
-//     for (const { name: collectionName } of collections) {
-//       const sourceCollection = sourceDb.collection(collectionName);
-//       const targetCollection = targetDb.collection(collectionName);
+    for (const { name: collectionName } of collections) {
+      const sourceCollection = sourceDb.collection(collectionName);
+      const targetCollection = targetDb.collection(collectionName);
 
-//       // Drop the target collection to avoid _id conflicts
-//       await targetCollection.drop().catch(() => {});
-//       console.log(`🧹 Dropped target collection: ${collectionName}`);
+      // Drop the target collection to avoid _id conflicts
+      await targetCollection.drop().catch(() => {});
+      console.log(`🧹 Dropped target collection: ${collectionName}`);
 
-//       const documents = await sourceCollection.find().toArray();
+      const documents = await sourceCollection.find().toArray();
 
-//       if (documents.length > 0) {
-//         const chunkSize = 1000;
-//         for (let i = 0; i < documents.length; i += chunkSize) {
-//           const chunk = documents.slice(i, i + chunkSize);
-//           await targetCollection.insertMany(chunk, { ordered: false });
-//         }
+      if (documents.length > 0) {
+        const chunkSize = 1000;
+        for (let i = 0; i < documents.length; i += chunkSize) {
+          const chunk = documents.slice(i, i + chunkSize);
+          await targetCollection.insertMany(chunk, { ordered: false });
+        }
 
-//         console.log(
-//           `✅ Copied ${documents.length} documents into ${collectionName}`
-//         );
-//       } else {
-//         console.log(`⚠️ No documents found in ${collectionName}`);
-//       }
-//     }
+        console.log(
+          `✅ Copied ${documents.length} documents into ${collectionName}`
+        );
+      } else {
+        console.log(`⚠️ No documents found in ${collectionName}`);
+      }
+    }
 
-//     console.log("🎉 Database copy completed successfully (IDs preserved).");
-//   } catch (error) {
-//     console.error("❌ Error copying database:", error);
-//   } finally {
-//     await client.close();
-//     console.log("🔒 MongoDB connection closed.");
-//   }
-// }
+    console.log("🎉 Database copy completed successfully (IDs preserved).");
+  } catch (error) {
+    console.error("❌ Error copying database:", error);
+  } finally {
+    await client.close();
+    console.log("🔒 MongoDB connection closed.");
+  }
+}
 
-// copyDatabase();
+copyDatabase();
 
 // // Mapping for renamed collections
 // const COLLECTION_MAP: Record<string, string> = {
@@ -202,45 +202,44 @@
 
 // ================================================================================
 
+// import { env } from "@/config/env.config";
+// import { MongoClient } from "mongodb";
 
-import { env } from "@/config/env.config";
-import { MongoClient } from "mongodb";
+// async function renameTenantIdToClientId() {
+//   const client = new MongoClient(env.MONGODB_URI);
 
-async function renameTenantIdToClientId() {
-  const client = new MongoClient(env.MONGODB_URI);
+//   try {
+//     await client.connect();
+//     console.log("✅ Connected to MongoDB");
 
-  try {
-    await client.connect();
-    console.log("✅ Connected to MongoDB");
+//     const db = client.db("LeaveMS");
+//     const collections = await db.listCollections().toArray();
 
-    const db = client.db("LeaveMS");
-    const collections = await db.listCollections().toArray();
+//     for (const { name: collectionName } of collections) {
+//       console.log(`\n📝 Processing collection: ${collectionName}`);
 
-    for (const { name: collectionName } of collections) {
-      console.log(`\n📝 Processing collection: ${collectionName}`);
+//       const collection = db.collection(collectionName);
 
-      const collection = db.collection(collectionName);
+//       // Rename tenantId → clientId (keeps the same value)
+//       const result = await collection.updateMany(
+//         { tenantId: { $exists: true } },
+//         {
+//           $rename: { tenantId: "clientId" },
+//         }
+//       );
 
-      // Rename tenantId → clientId (keeps the same value)
-      const result = await collection.updateMany(
-        { tenantId: { $exists: true } },
-        {
-          $rename: { tenantId: "clientId" },
-        }
-      );
+//       console.log(
+//         `✅ Updated ${result.modifiedCount} documents in ${collectionName}`
+//       );
+//     }
 
-      console.log(
-        `✅ Updated ${result.modifiedCount} documents in ${collectionName}`
-      );
-    }
+//     console.log("\n🎉 All collections processed successfully.");
+//   } catch (error) {
+//     console.error("❌ Error:", error);
+//   } finally {
+//     await client.close();
+//     console.log("🔒 MongoDB connection closed.");
+//   }
+// }
 
-    console.log("\n🎉 All collections processed successfully.");
-  } catch (error) {
-    console.error("❌ Error:", error);
-  } finally {
-    await client.close();
-    console.log("🔒 MongoDB connection closed.");
-  }
-}
-
-renameTenantIdToClientId();
+// renameTenantIdToClientId();

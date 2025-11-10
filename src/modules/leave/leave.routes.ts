@@ -72,7 +72,7 @@ router
     isAuth,
     // leaveRequestUpdateValidator,
     validateBody(leaveSchemas.leaveRequestUpdate),
-    leaveController.updateLeaveRequest
+    leaveController.updateLeaveRequestByClientAdmin
   )
   // .delete(clientMiddleware, isAuth, deleteLeaveRequest) // Delete leave request
   .all(methodNotAllowed);

@@ -420,7 +420,7 @@ class LeaveService {
         await mailService.sendLeaveRequestToSuperAdmin(emailObject);
       } catch (error) {
         console.error(
-          "Failed to send first approval email to client/super admin:",
+          "Failed to send leave email to client admin:",
           error
         );
       }
