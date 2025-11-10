@@ -34,6 +34,7 @@ class MailService {
     const templatePath = path.join(
       __dirname,
       "..",
+      "src",
       "templates",
       `${templateName}.html`
     );
