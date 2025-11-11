@@ -32,8 +32,8 @@ class MailService {
 
   private static loadTemplate(templateName: string, data: object): string {
     const templatePath = path.join(
-      __dirname,
-      "..",
+      process.cwd(),
+      // "..",
       "src",
       "templates",
       `${templateName}.html`
