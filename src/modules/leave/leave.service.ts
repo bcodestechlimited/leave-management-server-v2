@@ -186,7 +186,6 @@ class LeaveService {
     query: IQueryParams = {},
     meta?: { employeeId?: string; lineManager?: string }
   ) {
-    console.log("ggg");
     // Ensure query is not null/undefined before destructuring
     const safeQuery = query || {};
 
@@ -281,9 +280,7 @@ class LeaveService {
 
     // --- Execute final query ---
     const leaveRequests = await Leave.aggregate(pipeline);
-
-    console.log({ totalCount, filteredCount });
-
+    
     return ApiSuccess.ok("Leave requests retrieved successfully", {
       leaveRequests,
       pagination: {

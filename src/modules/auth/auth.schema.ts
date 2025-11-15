@@ -127,7 +127,6 @@ class AuthSchemas {
     const documents = req.files?.documents as UploadedFile[] | undefined;
     const avatar = req.files?.avatar as UploadedFile | undefined;
 
-    console.log({ documents, avatar });
 
     if (!documents && !avatar) {
       return next();

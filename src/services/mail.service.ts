@@ -39,8 +39,6 @@ class MailService {
       `${templateName}.html`
     );
 
-    console.log({ templatePath });
-
     const templateSource = fs.readFileSync(templatePath, "utf8");
     const compiledTemplate = handlebars.compile(templateSource);
     return compiledTemplate(data);

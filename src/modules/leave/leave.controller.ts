@@ -23,9 +23,6 @@ export class LeaveController {
 
   async getLeaveRequests(req: Request, res: Response) {
     const { clientId } = req.client;
-
-    console.log(clientId);
-
     const query = req.query;
     const result = await leaveService.getLeaveRequests(clientId, query);
     res.status(200).json(result);

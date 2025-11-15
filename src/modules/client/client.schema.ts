@@ -49,8 +49,6 @@ class ClientSchemas {
   validateUpdateLogo = (req: Request, res: Response, next: NextFunction) => {
     const logo = req.files?.logo as UploadedFile | undefined;
 
-    console.log({ logo });
-
     if (!logo) {
       return next();
     }
@@ -79,8 +77,6 @@ class ClientSchemas {
   };
   validateAddLogo = (req: Request, res: Response, next: NextFunction) => {
     const logo = req.files?.logo as UploadedFile | undefined;
-
-    console.log({ logo });
 
     if (!logo) {
       throw ApiError.badRequest("Logo file is required.");
