@@ -28,9 +28,9 @@ class ClientSchemas {
 
   forgotPassword = z
     .object({
-      password: z
-        .string({ required_error: "Password is required" })
-        .min(3, "Password must be at least 3 characters long"),
+      email: z
+        .string({ required_error: "Email is required" })
+        .email("Please provide a valid email address"),
     })
     .strict();
 
@@ -38,7 +38,7 @@ class ClientSchemas {
     .object({
       token: z
         .string({ required_error: "Token is required" })
-        .email("Please provide a token"),
+        .min(3, "Token must be at least 3 characters long"),
 
       password: z
         .string({ required_error: "Password is required" })
