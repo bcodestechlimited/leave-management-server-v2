@@ -2,9 +2,10 @@ import { ApiError, ApiSuccess } from "@/utils/responseHandler";
 import { paginate } from "@/utils/paginate";
 import { levelService } from "../level/level.service";
 import LeaveType from "./leave-type.model";
-import Employee from "../employee/employee.model";
 import LeaveBalance from "../leave-balance/leave-balance.model";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
+import agendaInstance from "@/lib/agenda";
+import Employee from "../employee/employee.model";
 
 class LeaveTypeService {
   async addLeaveType(leaveTypeData: any, clientId: string) {
@@ -49,7 +50,11 @@ class LeaveTypeService {
     );
 
     // Find all employees under this level
-    const employees = await Employee.find({ levelId, clientId }).lean();
+    const employees = await Employee.find({
+      levelId,
+      clientId,
+      accountType: "employee",
+    }).lean();
 
     // Add the leave type with the default balance to all employees in EmployeeLeaveBalance
     const employeeLeaveBalances = employees.map((employee) => ({
@@ -59,11 +64,63 @@ class LeaveTypeService {
       balance: defaultBalance,
     }));
 
+    console.log({ employeeLeaveBalances });
+
     // Use bulk insert to add leave balances for all employees
     await LeaveBalance.insertMany(employeeLeaveBalances);
 
     return ApiSuccess.created("Leave type added successfully", leaveType);
   }
+
+  // async addLeaveType(leaveTypeData: any, clientId: string) {
+  //   const { name, defaultBalance, levelId } = leaveTypeData;
+
+  //   // Check if leave type already exists in the level
+  //   const levelWithLeaveType = await levelService.getLevelById(
+  //     levelId,
+  //     clientId,
+  //     true,
+  //     [{ path: "leaveTypes", select: "name" }]
+  //   );
+
+  //   const leaveTypeExists = levelWithLeaveType.leaveTypes.some(
+  //     (lt) => lt.name === name.toLowerCase()
+  //   );
+
+  //   if (leaveTypeExists) {
+  //     throw ApiError.badRequest(
+  //       "A leave type with this name already exists in this level."
+  //     );
+  //   }
+
+  //   // Create leave type
+  //   const leaveType = await LeaveType.create({
+  //     name,
+  //     defaultBalance,
+  //     clientId,
+  //     levelId,
+  //   });
+
+  //   // Push leave type into level
+  //   await levelService.updateLevel(
+  //     levelId,
+  //     { $push: { leaveTypes: leaveType._id } },
+  //     clientId
+  //   );
+
+  //   // Queue background job (non-blocking)
+  //   await agendaInstance.now("generate-leave-balances", {
+  //     levelId,
+  //     clientId,
+  //     leaveTypeId: leaveType._id,
+  //     defaultBalance,
+  //   });
+
+  //   return ApiSuccess.created(
+  //     "Leave type added. Leave balances are being processed in the background.",
+  //     leaveType
+  //   );
+  // }
 
   async getLeaveTypes(query: IQueryParams, clientId: string) {
     const { page = 1, limit = 10, search, sort = { createdAt: -1 } } = query;
@@ -101,8 +158,10 @@ class LeaveTypeService {
     clientId: string
   ) {
     if (!leaveTypeId) {
-      throw ApiError.badRequest("LeaveTypeId not provided.");
+      throw ApiError.badRequest("Leave type id not provided.");
     }
+
+    console.log({ leaveTypeData });
 
     // Update the leave type
     const leaveType = await LeaveType.findOneAndUpdate(
@@ -112,9 +171,7 @@ class LeaveTypeService {
     );
 
     if (!leaveType) {
-      throw ApiError.badRequest(
-        "No leave type found with the provided leaveTypeId."
-      );
+      throw ApiError.badRequest("No leave type found");
     }
 
     // If the default balance is updated, adjust leave balances for all employees

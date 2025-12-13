@@ -11,4 +11,10 @@ router
   .get(clientMiddleware, isAuth, isClientAdmin, linkController.getAllLinks)
   .all(methodNotAllowed);
 
+router
+  .route("/:linkId")
+  .get(clientMiddleware, isAuth, isClientAdmin, linkController.getLink)
+  .put(clientMiddleware, isAuth, isClientAdmin, linkController.updateLink)
+  .all(methodNotAllowed);
+
 export default router;

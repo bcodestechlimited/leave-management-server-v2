@@ -25,7 +25,7 @@ router
     isAuth,
     isClientAdmin,
     // leaveTypeUpdateValidator,
-    leaveTypeController.getLeaveTypes
+    leaveTypeController.updateLeaveType
   ) // Update leave type
   .delete(
     clientMiddleware,

@@ -1,6 +1,8 @@
 import { Agenda } from "agenda";
 import { env } from "../config/env.config";
+import generateLeaveBalance from "@/jobs/generate-leave-balance";
 
+const isDev = env.NODE_ENV === "development";
 
 function addDbToUri(uri: string, dbName: string): string {
   const [base, query = ""] = uri.split("?"); // 1️⃣ split once
@@ -8,28 +10,27 @@ function addDbToUri(uri: string, dbName: string): string {
   return `${trimmedBase}/${dbName}${query ? "?" + query : ""}`; // 3️⃣ glue it back
 }
 
-const agenda = new Agenda({
+const agendaInstance = new Agenda({
   db: {
     address: addDbToUri(
       env.MONGODB_URI,
-      env.NODE_ENV === "production" ? "Haven-Lease" : "Haven-Lease-Staging"
+      isDev ? "LeaveMS-Stagging" : "LeaveMS-Live-v2"
     ),
     collection: "agendaJobs",
   },
   processEvery: "5 seconds",
 });
 
-// // Jobs
+// Jobs
 
-// agenda.define("send_booking_request_to_landlord", sendBookingRequestToLandlord);
-
+generateLeaveBalance(agendaInstance);
 
 export const startAgenda = async () => {
-  await agenda.start();
+  await agendaInstance.start();
   console.log("✅ Agenda started");
 
   // Log all jobs to check if it's running
-  const jobs = await agenda.jobs({});
+  const jobs = await agendaInstance.jobs({});
   console.log(`📋 Found ${jobs.length} jobs:`);
   // jobs.forEach(async (job: Job, i) => {
   //   console.log(
@@ -42,4 +43,4 @@ export const startAgenda = async () => {
   // });
 };
 
-export default agenda;
+export default agendaInstance;
