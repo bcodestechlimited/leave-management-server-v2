@@ -21,6 +21,7 @@ import Leave from "../leave/leave.model.js";
 import LeaveBalance from "../leave-balance/leave-balance.model.js";
 import { otpService } from "../otp/otp.service.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
+import { env } from "@/config/env.config.js";
 
 export class EmployeeService {
   // ---------------- AUTH ----------------
@@ -29,6 +30,22 @@ export class EmployeeService {
     const employee = await Employee.findOne({ email }).select("+password");
 
     if (!employee) throw ApiError.badRequest("No User with this email");
+
+    // If in development, skip password check
+    if (env.NODE_ENV !== "production") {
+      const token = generateToken({
+        employeeId: employee._id,
+        isAdmin: employee.isAdmin,
+        isEmployee: true,
+        roles: employee.isAdmin ? ["admin", "employee"] : ["employee"],
+      });
+      employee.password = undefined;
+      return ApiSuccess.created("Login successful", {
+        employee,
+        token,
+      });
+    }
+
     if (!employee.isEmailVerified) {
       throw ApiError.badRequest("Email has not been verified");
     }
@@ -303,6 +320,11 @@ export class EmployeeService {
       ];
     }
 
+    const totalEmployees = await Employee.countDocuments({
+      accountType: "employee",
+      clientId,
+    });
+
     const { documents: employees, pagination } = await paginate({
       model: Employee,
       query: filter,
@@ -322,6 +344,7 @@ export class EmployeeService {
     return ApiSuccess.ok("Employees Retrieved Successfully", {
       employees,
       pagination,
+      totalEmployees,
       // stats,
     });
   }

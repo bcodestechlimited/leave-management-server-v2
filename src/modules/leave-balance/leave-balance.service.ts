@@ -5,6 +5,124 @@ import LeaveBalance from "./leave-balance.model";
 import type { IQueryParams } from "@/shared/interfaces/query.interface";
 
 class LeaveBalanceService {
+  //   async getLeaveBalance(
+  //     clientId: string,
+  //     employeeId: string,
+  //     query: IQueryParams
+  //   ) {
+  //     const { search, limit = 10 } = query;
+
+  //     if (!mongoose.Types.ObjectId.isValid(employeeId)) {
+  //       throw ApiError.badRequest("Invalid employeeId provided.");
+  //     }
+
+  //     if (!mongoose.Types.ObjectId.isValid(clientId)) {
+  //       throw ApiError.badRequest("Invalid clientId provided.");
+  //     }
+
+  //     const employee = await Employee.findOne({
+  //       _id: employeeId,
+  //       clientId,
+  //     });
+
+  //     if (!employee) {
+  //       throw ApiError.notFound("Employee not found");
+  //     }
+
+  //     console.log({ limit });
+
+  //    const leaveBalances = await LeaveBalance.aggregate([
+  //   {
+  //     $match: {
+  //       clientId: new Types.ObjectId(clientId),
+  //       employeeId: new Types.ObjectId(employeeId),
+  //     },
+  //   },
+  //   {
+  //     $lookup: {
+  //       from: "leavetypes",
+  //       localField: "leaveTypeId",
+  //       foreignField: "_id",
+  //       as: "leaveType",
+  //     },
+  //   },
+  //   { $unwind: "$leaveType" },
+
+  //   // 🔹 SEARCH FILTER
+  //   ...(search
+  //     ? [{ $match: { "leaveType.name": { $regex: search, $options: "i" } } }]
+  //     : []),
+
+  //   // 🔹 EXCLUDE EXAM LEAVE
+  //   {
+  //     $match: {
+  //       "leaveType.name": { $not: /exam/i },
+  //       "leaveType.isActive": true,
+  //     },
+  //   },
+
+  //   // 🔹 GENDER FILTER
+  //   {
+  //     $match: {
+  //       ...(employee.gender === "female"
+  //         ? { "leaveType.name": { $not: /paternity/i } }
+  //         : {}),
+  //       ...(employee.gender === "male"
+  //         ? { "leaveType.name": { $not: /maternity/i } }
+  //         : {}),
+  //     },
+  //   },
+
+  //   // 🔹 LIMIT MUST COME LAST
+  //   { $limit: Number(limit) },
+
+  //   {
+  //     $project: {
+  //       _id: 1,
+  //       balance: 1,
+  //       "leaveType._id": 1,
+  //       "leaveType.name": 1,
+  //       "leaveType.defaultBalance": 1,
+  //       "leaveType.isActive": 1,
+  //     },
+  //   },
+  // ]);
+
+  //     // const newBalances = LeaveBalance.find({ clientId, employeeId }).populate([
+  //     //   {
+  //     //     path: "leaveTypeId",
+  //     //     select: "name defaultBalance",
+  //     //   },
+  //     // ]);
+
+  //     const filteredLeaveBalance = leaveBalances.filter((leaveBalance) => {
+  //       if (
+  //         employee.gender === "female" &&
+  //         leaveBalance.leaveType.name.includes("paternity")
+  //       )
+  //         return false;
+  //       if (
+  //         employee.gender === "male" &&
+  //         leaveBalance.leaveType.name.includes("maternity")
+  //       )
+  //         return false;
+  //       if (leaveBalance.leaveType.name.includes("exam")) return false;
+
+  //       if (leaveBalance.leaveType.isActive === false) return false;
+
+  //       return true;
+  //     });
+
+  //     console.log({ leaveBalances, filteredLeaveBalance });
+
+  //     // Return empty array if no balances are found
+  //     return ApiSuccess.ok("Leave balance retrieved successfully", {
+  //       // leaveBalance: leaveBalances.length > 0 ? leaveBalances : [],
+  //       // newBalances,
+  //       leaveBalances: leaveBalances,
+  //     });
+  //   }
+
   async getLeaveBalance(
     clientId: string,
     employeeId: string,
@@ -29,7 +147,17 @@ class LeaveBalanceService {
       throw ApiError.notFound("Employee not found");
     }
 
-    console.log({ limit });
+    // Build exclusion patterns based on gender
+    const exclusionPatterns = [
+      { "leaveType.name": /exam/i }, // Always exclude exam
+    ];
+
+    // Add gender-specific exclusions
+    if (employee.gender === "female") {
+      exclusionPatterns.push({ "leaveType.name": /paternity/i });
+    } else if (employee.gender === "male") {
+      exclusionPatterns.push({ "leaveType.name": /maternity/i });
+    }
 
     const leaveBalances = await LeaveBalance.aggregate([
       {
@@ -47,10 +175,20 @@ class LeaveBalanceService {
         },
       },
       { $unwind: "$leaveType" },
+
       ...(search
         ? [{ $match: { "leaveType.name": { $regex: search, $options: "i" } } }]
         : []),
+
+      {
+        $match: {
+          "leaveType.isActive": { $ne: false },
+          $nor: exclusionPatterns,
+        },
+      },
+
       { $limit: Number(limit) },
+
       {
         $project: {
           _id: 1,
@@ -58,41 +196,15 @@ class LeaveBalanceService {
           "leaveType._id": 1,
           "leaveType.name": 1,
           "leaveType.defaultBalance": 1,
+          "leaveType.isActive": 1,
         },
       },
     ]);
 
-    // const newBalances = LeaveBalance.find({ clientId, employeeId }).populate([
-    //   {
-    //     path: "leaveTypeId",
-    //     select: "name defaultBalance",
-    //   },
-    // ]);
-
-    const filteredLeaveBalance = leaveBalances.filter((leaveBalance) => {
-      if (
-        employee.gender === "female" &&
-        leaveBalance.leaveType.name.includes("paternity")
-      )
-        return false;
-      if (
-        employee.gender === "male" &&
-        leaveBalance.leaveType.name.includes("maternity")
-      )
-        return false;
-      if (leaveBalance.leaveType.name.includes("exam")) return false;
-
-      return true;
-    });
-
-    // Return empty array if no balances are found
     return ApiSuccess.ok("Leave balance retrieved successfully", {
-      // leaveBalance: leaveBalances.length > 0 ? leaveBalances : [],
-      // newBalances,
-      leaveBalances: filteredLeaveBalance,
+      leaveBalances: leaveBalances,
     });
   }
-
   async getSingleLeaveBalance(
     clientId: string,
     employeeId: string,
