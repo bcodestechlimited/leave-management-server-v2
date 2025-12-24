@@ -16,7 +16,7 @@ const connectDB = async () => {
       dbName: isDev ? "LeaveMS-Stagging" : "LeaveMS-Live-v2",
       // dbName: "LeaveMS-Live-v2",
     });
-    logger.info("DB Connected!");
+    logger.info(`DB Connected! environment: ${env.NODE_ENV}`);
   } catch (error) {
     logger.error("MongoDB connection error:", error);
     throw error;
