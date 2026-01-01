@@ -13,6 +13,7 @@
     "lint": "bun run lint",
     "scripts:copy-db": "bun run src/scripts/copy-db.ts",
     "scripts:reset-leave-balance": "bun run src/scripts/reset-leave-balance.ts",
+    "scripts:reset-all-leave-balance": "bun run src/scripts/reset-all-leave-balance.ts",
     "script:test": "bun run src/scripts/test.ts",
     "scripts:create-module": "bun run /src/scripts/create-module.ts",
     "scripts:reset-password": "bun run /src/scripts/reset-password.ts"
