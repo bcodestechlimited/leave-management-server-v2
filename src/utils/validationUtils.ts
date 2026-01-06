@@ -26,7 +26,7 @@ export async function comparePassword(
   }
   const isMatch = await Bun.password.verify(incomingPassword, existingPassword);
   if (!isMatch) {
-    throw ApiError.unauthorized("Unauthorized");
+    throw ApiError.unauthorized("Invalid credentials");
   }
 }
 
