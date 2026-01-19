@@ -16,7 +16,7 @@ export class LeaveController {
       leaveRequestData,
       employeeId,
       clientId,
-      document
+      document,
     );
     res.status(201).json(result);
   }
@@ -54,7 +54,7 @@ export class LeaveController {
     const { leaveRequestId } = req.params;
     const result = await leaveService.getSingleLeaveRequest(
       leaveRequestId as string,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -68,7 +68,7 @@ export class LeaveController {
       leaveRequestId as string,
       leaveRequestData,
       employeeId,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -80,7 +80,7 @@ export class LeaveController {
     const result = await leaveService.updateLeaveRequestByClientAdmin(
       leaveRequestId as string,
       leaveRequestData,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -90,9 +90,21 @@ export class LeaveController {
     const { leaveRequestId } = req.params;
     // const { employeeId } = req.employee;
     const result = await leaveService.updateLeaveRequestBySuperAdmin(
+      clientId,
       leaveRequestId as string,
       leaveRequestData,
-      clientId
+    );
+    res.status(200).json(result);
+  }
+
+  async updateLeaveRequestDate(req: Request, res: Response) {
+    const { clientId } = req.client;
+    const leaveRequestData = req.body;
+    const { leaveRequestId } = req.params;
+    const result = await leaveService.updateLeaveRequestDate(
+      clientId,
+      leaveRequestId as string,
+      leaveRequestData,
     );
     res.status(200).json(result);
   }
@@ -102,7 +114,7 @@ export class LeaveController {
     const { leaveRequestId } = req.params;
     const result = await leaveService.deleteLeaveRequest(
       leaveRequestId as string,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -111,7 +123,7 @@ export class LeaveController {
     const { year, clientId } = req.query;
     const result = await leaveService.getLeaveRequestAnalytics(
       clientId as string,
-      year as string
+      year as string,
     );
     res.status(200).json(result);
   }
@@ -123,7 +135,7 @@ export class LeaveController {
     res.setHeader("Content-Type", "application/pdf");
     res.setHeader(
       "Content-Disposition",
-      "attachment; filename=leave-report.pdf"
+      "attachment; filename=leave-report.pdf",
     );
     res.send(result);
   }

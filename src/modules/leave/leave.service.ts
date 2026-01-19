@@ -18,12 +18,10 @@ class LeaveService {
     leaveData: any,
     employeeId: string,
     clientId: string,
-    document: UploadedFile | undefined
+    document: UploadedFile | undefined,
   ) {
     const { leaveTypeId, startDate, resumptionDate, duration, reason } =
       leaveData;
-
-    console.log({ leaveTypeId, employeeId });
 
     // Validate leave balance
     let leaveBalance = await LeaveBalance.findOne({
@@ -111,7 +109,7 @@ class LeaveService {
     //Upload image to cloudinary
     if (document) {
       const response = await uploadService.uploadToCloudinary(
-        document.tempFilePath
+        document.tempFilePath,
       );
       if (response.secure_url) {
         documentUrl = response.secure_url;
@@ -125,7 +123,7 @@ class LeaveService {
 
     if (pendingLeaveRequest) {
       throw ApiError.badRequest(
-        "You already have a pending leave request, please wait for that request to be approved."
+        "You already have a pending leave request, please wait for that request to be approved.",
       );
     }
 
@@ -177,14 +175,14 @@ class LeaveService {
 
     return ApiSuccess.created(
       "Leave request submitted successfully",
-      leaveRequest
+      leaveRequest,
     );
   }
 
   async getLeaveRequests(
     clientId: string,
     query: IQueryParams = {},
-    meta?: { employeeId?: string; lineManager?: string }
+    meta?: { employeeId?: string; lineManager?: string },
   ) {
     // Ensure query is not null/undefined before destructuring
     const safeQuery = query || {};
@@ -280,7 +278,7 @@ class LeaveService {
 
     // --- Execute final query ---
     const leaveRequests = await Leave.aggregate(pipeline);
-    
+
     return ApiSuccess.ok("Leave requests retrieved successfully", {
       leaveRequests,
       pagination: {
@@ -318,7 +316,7 @@ class LeaveService {
 
     if (!leaves) {
       throw ApiError.badRequest(
-        "No leave request found with the provided leaveId."
+        "No leave request found with the provided leaveId.",
       );
     }
 
@@ -329,7 +327,7 @@ class LeaveService {
     leaveId: string,
     leaveRequestData: any,
     employeeId: string,
-    clientId: string
+    clientId: string,
   ) {
     const { status, reason } = leaveRequestData;
 
@@ -346,7 +344,7 @@ class LeaveService {
 
     if (!leaveRequest) {
       throw ApiError.badRequest(
-        "No leave request found with the provided leaveId."
+        "No leave request found with the provided leaveId.",
       );
     }
 
@@ -394,7 +392,7 @@ class LeaveService {
       try {
         const emailObject = this.createEmailObject(leaveRequest, employee);
         await mailService.sendLeaveRejectionEmailToEmployeeFromLineManager(
-          emailObject
+          emailObject,
         );
       } catch (error) {
         console.error("Failed to send leave rejection email:", error);
@@ -416,17 +414,14 @@ class LeaveService {
         // Send to super admin for final approval
         await mailService.sendLeaveRequestToSuperAdmin(emailObject);
       } catch (error) {
-        console.error(
-          "Failed to send leave email to client admin:",
-          error
-        );
+        console.error("Failed to send leave email to client admin:", error);
       }
     }
 
     await leaveRequest.save();
     return ApiSuccess.ok(
       "Leave request status updated successfully",
-      leaveRequest
+      leaveRequest,
     );
   }
 
@@ -437,7 +432,7 @@ class LeaveService {
   async updateLeaveRequestByClientAdmin(
     leaveId: string,
     leaveRequestData: any,
-    clientId: string
+    clientId: string,
   ) {
     const { status, reason } = leaveRequestData;
 
@@ -454,19 +449,19 @@ class LeaveService {
 
     if (!leaveRequest) {
       throw ApiError.badRequest(
-        "No leave request found with the provided leaveId."
+        "No leave request found with the provided leaveId.",
       );
     }
 
     if (leaveRequest.approvalCount && leaveRequest.approvalCount <= 0) {
       throw ApiError.badRequest(
-        "This leave request has not been approved by the employee's line manager yet"
+        "This leave request has not been approved by the employee's line manager yet",
       );
     }
 
     if (!leaveRequest.reliever || !leaveRequest.employee.reliever) {
       throw ApiError.badRequest(
-        "Please inform the employee to re-update their reliever first"
+        "Please inform the employee to re-update their reliever first",
       );
     }
 
@@ -506,7 +501,7 @@ class LeaveService {
       try {
         const emailObject = this.createEmailObject(leaveRequest, employee);
         await mailService.sendLeaveRejectionEmailToEmployeeFromAdmin(
-          emailObject
+          emailObject,
         );
       } catch (error) {
         console.error("Failed to send leave rejection email:", error);
@@ -543,7 +538,7 @@ class LeaveService {
       } catch (error) {
         console.error(
           "Failed to send second approval email to employee and line manager:",
-          error
+          error,
         );
       }
     }
@@ -551,7 +546,7 @@ class LeaveService {
     await leaveRequest.save();
     return ApiSuccess.ok(
       "Leave request status updated successfully",
-      leaveRequest
+      leaveRequest,
     );
   }
 
@@ -672,7 +667,7 @@ class LeaveService {
   async updateLeaveRequestBySuperAdmin(
     clientId: string,
     leaveId: string,
-    leaveRequestData: any
+    leaveRequestData: any,
   ) {
     const { status, reason } = leaveRequestData;
 
@@ -691,13 +686,13 @@ class LeaveService {
 
     if (!leaveRequest) {
       throw ApiError.badRequest(
-        "No leave request found with the provided leaveId."
+        "No leave request found with the provided leaveId.",
       );
     }
 
     if (leaveRequest?.approvalCount && leaveRequest?.approvalCount <= 0) {
       throw ApiError.badRequest(
-        "This leave request has not been approved by the employee's line manager yet"
+        "This leave request has not been approved by the employee's line manager yet",
       );
     }
 
@@ -737,7 +732,7 @@ class LeaveService {
       try {
         const emailObject = this.createEmailObject(leaveRequest, employee);
         await mailService.sendLeaveRejectionEmailToEmployeeFromAdmin(
-          emailObject
+          emailObject,
         );
       } catch (error) {
         console.error("Failed to send leave rejection email:", error);
@@ -771,7 +766,7 @@ class LeaveService {
       } catch (error) {
         console.error(
           "Failed to send second approval email employee and line manager:",
-          error
+          error,
         );
       }
     }
@@ -779,7 +774,69 @@ class LeaveService {
     await leaveRequest.save();
     return ApiSuccess.ok(
       "Leave request status updated successfully",
-      leaveRequest
+      leaveRequest,
+    );
+  }
+  async updateLeaveRequestDate(
+    clientId: string,
+    leaveId: string,
+    leaveRequestData: any,
+  ) {
+    const { startDate, duration, resumptionDate } = leaveRequestData;
+
+    console.log({ leaveId, clientId, startDate, duration, resumptionDate });
+
+    const leaveRequest = await Leave.findOne({
+      _id: leaveId,
+      clientId,
+    });
+
+    if (!leaveRequest) {
+      throw ApiError.badRequest(
+        "No leave request found with the provided leaveId.",
+      );
+    }
+
+    const employee = Employee.findById(leaveRequest.employee).populate([
+      {
+        path: "lineManager",
+      },
+      {
+        path: "clientId",
+      },
+    ]);
+
+    if (!employee) {
+      throw ApiError.badRequest("Employee not found");
+    }
+
+    const leaveBalance = await LeaveBalance.findOne({
+      employeeId: leaveRequest.employee,
+      leaveTypeId: leaveRequest.leaveType,
+      clientId,
+    });
+
+    if (!leaveBalance) {
+      throw ApiError.badRequest("No leave balance found for the employee.");
+    }
+
+    // The leave balance should be updated first
+    leaveBalance.balance += leaveRequest.duration;
+
+    // Then deduct the new duration
+    leaveBalance.balance -= duration;
+
+    leaveRequest.status = "pending";
+    leaveRequest.startDate = startDate;
+    leaveRequest.duration = duration;
+    leaveRequest.resumptionDate = resumptionDate;
+
+    await leaveBalance.save();
+    await leaveRequest.save();
+
+    return ApiSuccess.ok(
+      "Leave request date updated successfully",
+      leaveRequest,
     );
   }
 
@@ -795,7 +852,7 @@ class LeaveService {
 
     if (!leaveRequest) {
       throw ApiError.badRequest(
-        "No leave request found with the provided leaveId."
+        "No leave request found with the provided leaveId.",
       );
     }
 
@@ -808,7 +865,7 @@ class LeaveService {
 
   async getMonthlyLeaveReport(
     clientId: string,
-    query: { startDate: string; endDate: string }
+    query: { startDate: string; endDate: string },
   ) {
     const { startDate, endDate } = query;
 

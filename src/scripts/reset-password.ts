@@ -2,8 +2,8 @@ import Employee from "@/modules/employee/employee.model";
 import { hashPassword } from "@/utils/validationUtils";
 import connectDB from "@/config/connectDB";
 
-const EMAIL = ""; // 🔁 change this
-const NEW_PASSWORD = "pass12345";
+const EMAIL = "hope.ajah@ng.moniepoint.com"; // 🔁 change this
+const NEW_PASSWORD = "rZqLwAHDmPFeSxYcBNJkTURoVQGiWa";
 
 async function resetEmployeePassword() {
   try {

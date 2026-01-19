@@ -19,7 +19,7 @@ router
   .route("/auth/login")
   .post(
     // validateBody(),
-    adminController.adminLogin
+    adminController.adminLogin,
   )
   .all(methodNotAllowed);
 
@@ -27,7 +27,7 @@ router
   .route("/auth/login/employee")
   .post(
     // adminLogInValidator,
-    adminController.adminLoginAsEmployee
+    adminController.adminLoginAsEmployee,
   )
   .all(methodNotAllowed);
 
@@ -40,7 +40,7 @@ router
   .route("/auth/forgot-password")
   .post(
     // adminForgotPasswordValidator,
-    adminController.adminForgotPassword
+    adminController.adminForgotPassword,
   )
   .all(methodNotAllowed);
 
@@ -48,7 +48,7 @@ router
   .route("/auth/reset-password")
   .post(
     // adminResetPasswordValidator
-    adminController.adminResetPassword
+    adminController.adminResetPassword,
   )
   .all(methodNotAllowed);
 
@@ -62,13 +62,13 @@ router
     isAuth,
     isAdmin,
     // validateBody(clientSchemas.update),
-    adminController.addClient
+    adminController.addClient,
   )
   .get(
     isAuth,
 
     isAdmin,
-    adminController.getClients
+    adminController.getClients,
   )
   .all(methodNotAllowed);
 
@@ -97,7 +97,7 @@ router
     clientMiddleware,
     isAuth,
     isAdmin,
-    leaveController.getMonthlyLeaveRequestReport
+    leaveController.getMonthlyLeaveRequestReport,
   )
   .all(methodNotAllowed);
 
@@ -114,7 +114,18 @@ router
     isAuth,
     isAdmin,
     validateBody(leaveSchemas.leaveRequestUpdate),
-    adminController.updateLeaveRequest
+    adminController.updateLeaveRequest,
+  )
+  .all(methodNotAllowed);
+
+router
+  .route("/leave/:leaveRequestId/date")
+  .put(
+    clientMiddleware,
+    isAuth,
+    isAdmin,
+    validateBody(leaveSchemas.leaveRequestUpdateDate),
+    leaveController.updateLeaveRequestDate,
   )
   .all(methodNotAllowed);
 
@@ -140,7 +151,7 @@ router
     isAuth,
     isAdmin,
     validateBody(leaveSchemas.leaveRequestUpdate),
-    leaveController.updateLeaveRequest
+    leaveController.updateLeaveRequest,
   )
   //   .delete(clientMiddleware, isAuth, leaveController.deleteLeaveRequest) // Delete leave request
   .all(methodNotAllowed);
@@ -152,7 +163,7 @@ router
     isAuth,
     isAdmin,
     validateBody(leaveSchemas.leaveRequestUpdate),
-    leaveController.updateLeaveRequest
+    leaveController.updateLeaveRequest,
   )
   // .delete(clientMiddleware, isAuth, deleteLeaveRequest) // Delete leave request
   .all(methodNotAllowed);
@@ -168,7 +179,7 @@ router
     isAuth,
     isAdmin,
     validateBody(employeeSchemas.inviteValidation),
-    employeeController.sendInvite
+    employeeController.sendInvite,
   )
   .all(methodNotAllowed);
 
@@ -179,7 +190,7 @@ router
     isAuth,
     isAdmin,
     validateBody(employeeSchemas.employeeProfileUpdate),
-    employeeController.updateEmployee
+    employeeController.updateEmployee,
   )
   .all(methodNotAllowed);
 

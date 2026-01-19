@@ -40,7 +40,7 @@ class LeaveSchemas {
       {
         message: "resumptionDate must be after startDate",
         path: ["resumptionDate"],
-      }
+      },
     );
 
   //  2. Leave request update (approve/reject)
@@ -60,7 +60,39 @@ class LeaveSchemas {
       path: ["reason"],
     });
 
-  // 3. File validation middleware (document upload)
+  //  3. Leave request update date
+  leaveRequestUpdateDate = z
+    .object({
+      startDate: z
+        .string({ required_error: "startDate is required" })
+        .refine((val) => !isNaN(Date.parse(val)), {
+          message: "Invalid startDate",
+        }),
+
+      resumptionDate: z
+        .string({ required_error: "resumptionDate is required" })
+        .refine((val) => !isNaN(Date.parse(val)), {
+          message: "Invalid resumptionDate",
+        }),
+
+      duration: z.coerce
+        .number()
+        .int()
+        .min(0, "duration must be a positive integer"),
+    })
+    .refine(
+      (data) => {
+        const start = new Date(data.startDate);
+        const resume = new Date(data.resumptionDate);
+        return resume > start;
+      },
+      {
+        message: "resumptionDate must be after startDate",
+        path: ["resumptionDate"],
+      },
+    );
+
+  // 4. File validation middleware (document upload)
   validateDocument(req: Request, _res: Response, next: NextFunction) {
     if (!req.files) return next();
 
@@ -85,7 +117,7 @@ class LeaveSchemas {
 
     if (!allowedFileTypes.includes(file.mimetype)) {
       throw ApiError.unprocessableEntity(
-        `Invalid file type. Allowed types are: ${allowedFileTypes.join(", ")}`
+        `Invalid file type. Allowed types are: ${allowedFileTypes.join(", ")}`,
       );
     }
 
@@ -94,7 +126,7 @@ class LeaveSchemas {
       throw ApiError.unprocessableEntity(
         `File size exceeds the maximum allowed limit of ${
           maxSize / 1024 / 1024
-        } MB`
+        } MB`,
       );
     }
 
