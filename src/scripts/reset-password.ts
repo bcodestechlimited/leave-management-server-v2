@@ -3,7 +3,7 @@ import { hashPassword } from "@/utils/validationUtils";
 import connectDB from "@/config/connectDB";
 
 const EMAIL = "hope.ajah@ng.moniepoint.com"; // 🔁 change this
-const NEW_PASSWORD = "rZqLwAHDmPFeSxYcBNJkTURoVQGiWa";
+const NEW_PASSWORD = ""; // 🔁 change this
 
 async function resetEmployeePassword() {
   try {
