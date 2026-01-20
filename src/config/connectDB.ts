@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import { env } from "./env.config";
 import logger from "../utils/logger";
 
-const isDev = env.NODE_ENV === "development";
+const isProd = env.NODE_ENV === "production";
 
 const connectDB = async () => {
   if (mongoose.connection.readyState === 1) {
@@ -13,7 +13,7 @@ const connectDB = async () => {
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {
-      dbName: !isDev ? "LeaveMS-Live-v2" : "LeaveMS-Stagging",
+      dbName: isProd ? "LeaveMS-Live-v2" : "LeaveMS-Stagging",
       // dbName: "LeaveMS-Live-v2",
     });
     logger.info(`DB Connected! environment: ${env.NODE_ENV}`);
