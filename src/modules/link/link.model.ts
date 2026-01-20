@@ -42,9 +42,10 @@ const linkSchema: Schema<ILink> = new Schema(
       type: String,
       enum: ["pending", "accepted", "expired"],
       default: "pending",
+      index: true,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Link = mongoose.model<ILink>("Link", linkSchema);

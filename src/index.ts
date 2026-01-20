@@ -35,7 +35,7 @@ app.use(
     //   "https://leave-management-client-navy.vercel.app/",
     // ],
     origin: "*",
-  })
+  }),
 );
 // app.use(cookieParser());
 app.use(express.json());
@@ -47,7 +47,7 @@ app.use(
     tempFileDir: "/tmp/",
     parseNested: true,
     // debug: true,
-  })
+  }),
 );
 app.use(morgan("dev"));
 app.get("/", (req, res) => {
@@ -75,7 +75,7 @@ const startServer = async () => {
     await connectDB();
     app.listen(port, async () => {
       logger.info(
-        `Server is listening on PORT:${port} in ${env.NODE_ENV} environment`
+        `Server is listening on PORT:${port} in ${env.NODE_ENV} environment`,
       );
       // initializeSocket(server);
       startAgenda();

@@ -1,6 +1,7 @@
 import { Agenda } from "agenda";
 import { env } from "../config/env.config";
 import generateLeaveBalance from "@/jobs/generate-leave-balance";
+import expireLinksJob from "@/jobs/expire-links.job";
 
 const isDev = env.NODE_ENV === "development";
 
@@ -14,7 +15,7 @@ const agendaInstance = new Agenda({
   db: {
     address: addDbToUri(
       env.MONGODB_URI,
-      isDev ? "LeaveMS-Stagging" : "LeaveMS-Live-v2"
+      isDev ? "LeaveMS-Stagging" : "LeaveMS-Live-v2",
     ),
     collection: "agendaJobs",
   },
@@ -22,8 +23,8 @@ const agendaInstance = new Agenda({
 });
 
 // Jobs
-
 generateLeaveBalance(agendaInstance);
+expireLinksJob(agendaInstance);
 
 export const startAgenda = async () => {
   await agendaInstance.start();
@@ -41,6 +42,12 @@ export const startAgenda = async () => {
   //     await job.run();
   //   }
   // });
+  await agendaInstance.every(
+    "0 0 * * *",
+    "expire-links",
+    {},
+    { timezone: "Africa/Lagos" },
+  );
 };
 
 export default agendaInstance;
