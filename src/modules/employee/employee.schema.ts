@@ -103,7 +103,7 @@ class EmployeeSchemas {
             val === null || val === undefined || /^[0-9a-fA-F]{24}$/.test(val),
           {
             message: "Line Manager must be a valid MongoDB ID.",
-          }
+          },
         ),
       reliever: z
         .string()
@@ -114,7 +114,7 @@ class EmployeeSchemas {
             val === null || val === undefined || /^[0-9a-fA-F]{24}$/.test(val),
           {
             message: "Reliever must be a valid MongoDB ID.",
-          }
+          },
         ),
       levelId: z
         .string()
@@ -131,6 +131,7 @@ class EmployeeSchemas {
 
   employeeProfileUpdate = z
     .object({
+      staffId: z.string().optional().describe("Staff ID must be a string."),
       firstname: z.string().optional().describe("Name must be a string."),
       middlename: z.string().optional().describe("Name must be a string."),
       surname: z.string().optional().describe("Name must be a string."),
@@ -186,7 +187,7 @@ class EmployeeSchemas {
     // Validate file type
     if (!validFileTypes.includes(file.mimetype)) {
       throw ApiError.badRequest(
-        `Invalid file type. Allowed types are: ${validFileTypes.join(", ")}`
+        `Invalid file type. Allowed types are: ${validFileTypes.join(", ")}`,
       );
     }
 
@@ -196,7 +197,7 @@ class EmployeeSchemas {
       throw ApiError.badRequest(
         `File size exceeds the maximum allowed limit of ${
           maxSize / 1024 / 1024
-        } MB.`
+        } MB.`,
       );
     }
 
@@ -206,7 +207,7 @@ class EmployeeSchemas {
   validateBulkInviteFile = (
     req: Request,
     res: Response,
-    next: NextFunction
+    next: NextFunction,
   ) => {
     if (!req.files) {
       throw ApiError.badRequest("Please upload a file");
@@ -226,14 +227,14 @@ class EmployeeSchemas {
 
     if (!validFileTypes.includes(file.mimetype)) {
       throw ApiError.badRequest(
-        "Invalid file type. Only CSV files are allowed"
+        "Invalid file type. Only CSV files are allowed",
       );
     }
 
     // Check if file size is acceptable (10MB max)
     if (file.size > 10 * 1024 * 1024) {
       throw ApiError.badRequest(
-        "File size exceeds the maximum allowed size (10MB)"
+        "File size exceeds the maximum allowed size (10MB)",
       );
     }
 
