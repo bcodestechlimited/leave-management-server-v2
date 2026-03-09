@@ -671,8 +671,6 @@ class LeaveService {
   ) {
     const { status, reason } = leaveRequestData;
 
-    console.log({ leaveId, clientId });
-
     // Find the leave request
     const leaveRequest = await Leave.findOne({
       _id: leaveId,
@@ -737,6 +735,33 @@ class LeaveService {
       } catch (error) {
         console.error("Failed to send leave rejection email:", error);
       }
+    }
+
+    // If cancelled, add leave balance back
+    if (status === "cancelled") {
+      const leaveBalance = await LeaveBalance.findOne({
+        employeeId: leaveRequest.employee,
+        leaveTypeId: leaveRequest.leaveType,
+        clientId,
+      });
+
+      if (!leaveBalance) {
+        throw ApiError.badRequest("No leave balance found for the employee.");
+      }
+
+      leaveBalance.balance += leaveRequest.duration;
+      leaveRequest.rejectionReason = reason;
+      leaveRequest.rejectedBy = leaveRequest.lineManager._id as IEmployee;
+      await leaveBalance.save();
+
+      // try {
+      //   const emailObject = this.createEmailObject(leaveRequest, employee);
+      //   await mailService.sendLeaveRejectionEmailToEmployeeFromAdmin(
+      //     emailObject,
+      //   );
+      // } catch (error) {
+      //   console.error("Failed to send leave rejection email:", error);
+      // }
     }
 
     if (status === "approved") {

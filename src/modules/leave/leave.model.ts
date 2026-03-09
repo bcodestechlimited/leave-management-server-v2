@@ -42,7 +42,7 @@ const leaveSchema: Schema<ILeave> = new Schema(
     },
     status: {
       type: String,
-      enum: ["pending", "approved", "rejected"],
+      enum: ["pending", "approved", "rejected", "cancelled"],
       default: "pending",
     },
     reason: {
@@ -102,7 +102,7 @@ const leaveSchema: Schema<ILeave> = new Schema(
       default: null,
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Leave = mongoose.model<ILeave>("Leave", leaveSchema);

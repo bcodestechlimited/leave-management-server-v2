@@ -46,7 +46,7 @@ class LeaveSchemas {
   //  2. Leave request update (approve/reject)
   leaveRequestUpdate = z
     .object({
-      status: z.enum(["approved", "rejected"], {
+      status: z.enum(["approved", "rejected", "cancelled"], {
         required_error: "Status is required",
         invalid_type_error: "Status must be either 'approved' or 'rejected'",
       }),
