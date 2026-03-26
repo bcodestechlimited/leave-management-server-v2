@@ -12,7 +12,7 @@ export default interface ILeave extends Document {
   startDate: Date;
   resumptionDate: Date;
   duration: number;
-  status: "pending" | "approved" | "rejected" | "cancelled";
+  status: "pending" | "approved" | "reversed" | "rejected" | "cancelled";
   reason: string;
   rejectionReason?: string | undefined;
   approvalReason?: string;

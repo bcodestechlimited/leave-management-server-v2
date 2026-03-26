@@ -109,6 +109,16 @@ export class LeaveController {
     res.status(200).json(result);
   }
 
+  async reverseLeaveRequest(req: Request, res: Response) {
+    const { clientId } = req.client;
+    const { leaveRequestId } = req.params;
+    const result = await leaveService.reverseLeaveRequest(
+      clientId,
+      leaveRequestId as string,
+    );
+    res.status(200).json(result);
+  }
+
   async deleteLeaveRequest(req: Request, res: Response) {
     const { clientId } = req.client;
     const { leaveRequestId } = req.params;

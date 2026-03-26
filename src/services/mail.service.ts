@@ -36,7 +36,7 @@ class MailService {
       // "..",
       "src",
       "templates",
-      `${templateName}.html`
+      `${templateName}.html`,
     );
 
     const templateSource = fs.readFileSync(templatePath, "utf8");
@@ -292,7 +292,7 @@ class MailService {
           leaveReason,
           leaveRequestUrl,
           date,
-        }
+        },
       );
 
       console.log(`Reliever Email: ${relieverEmail}`);
@@ -682,7 +682,72 @@ class MailService {
           rejectionReason,
           leaveRequestUrl,
           date,
-        }
+        },
+      );
+
+      return this.sendEmail({
+        to: employeeEmail,
+        subject,
+        text: emailText,
+        html,
+      });
+    } catch (error) {
+      console.error("Error sending client email:", error);
+      throw error;
+    }
+  }
+
+  async sendLeaveReversalEmailToEmployeeFromAdmin({
+    email,
+    clientName,
+    color = "#000000",
+    logo,
+    lineManagerName,
+    employeeName,
+    employeeEmail,
+    startDate,
+    resumptionDate,
+    leaveReason,
+    leaveRequestUrl,
+    date = new Date().getFullYear(),
+  }: {
+    email: string;
+    clientName: string;
+    color?: string;
+    logo: string;
+    lineManagerName: string;
+    employeeName: string;
+    employeeEmail: string;
+    startDate: Date;
+    resumptionDate: Date;
+    leaveReason: string;
+    leaveRequestUrl: string;
+    date?: Date | number;
+  }): Promise<SentMessageInfo> {
+    try {
+      const subject = "Leave Request";
+
+      const emailText = `
+    Hello ${employeeName},\n\n
+    we regret to inform you that your leave request from ${startDate} to ${resumptionDate} has been reversed:\n\n
+    Click the link below to view leave details:\n
+    ${leaveRequestUrl}
+  `;
+
+      const html = MailService.loadTemplate(
+        "leave-reversed-to-employee",
+        {
+          clientName,
+          color,
+          logo,
+          lineManagerName,
+          employeeName,
+          startDate: formatDate(startDate.toString()),
+          resumptionDate: formatDate(resumptionDate.toString()),
+          leaveReason,
+          leaveRequestUrl,
+          date,
+        },
       );
 
       return this.sendEmail({
