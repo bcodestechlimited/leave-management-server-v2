@@ -131,6 +131,11 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/leave/:leaveRequestId/reverse")
+  .put(clientMiddleware, isAuth, isAdmin, leaveController.reverseLeaveRequest)
+  .all(methodNotAllowed);
+
+router
   .route("/employee")
   .get(isAuth, isAdmin, leaveController.getEmployeeLeaveRequests) // Get all leave requests for an employee
   .all(methodNotAllowed);

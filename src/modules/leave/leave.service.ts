@@ -864,6 +864,80 @@ class LeaveService {
       leaveRequest,
     );
   }
+  async reverseLeaveRequest(clientId: string, leaveId: string) {
+    // Find leave request
+    const leaveRequest = await Leave.findOne({
+      _id: leaveId,
+      clientId,
+    }).populate([
+      { path: "employee" },
+      { path: "lineManager" },
+      { path: "leaveType" },
+    ]);
+
+    if (!leaveRequest) {
+      throw ApiError.badRequest(
+        "No leave request found with the provided leaveId.",
+      );
+    }
+
+    // Only approved leave should be reversible
+    if (leaveRequest.status !== "approved") {
+      throw ApiError.badRequest(
+        "Only approved leave requests can be reversed.",
+      );
+    }
+
+    // // Prevent double reversal
+    // if (leaveRequest.status === "reversed") {
+    //   throw ApiError.badRequest(
+    //     "This leave request has already been reversed.",
+    //   );
+    // }
+
+    // Find employee
+    const employee = await Employee.findById(leaveRequest.employee).populate([
+      { path: "lineManager" },
+      { path: "clientId" },
+    ]);
+
+    if (!employee) {
+      throw ApiError.badRequest("Employee not found");
+    }
+
+    // Find leave balance
+    const leaveBalance = await LeaveBalance.findOne({
+      employeeId: leaveRequest.employee,
+      leaveTypeId: leaveRequest.leaveType,
+      clientId,
+    });
+
+    if (!leaveBalance) {
+      throw ApiError.badRequest("Leave balance record not found");
+    }
+
+    // Add leave days back
+    leaveBalance.balance += leaveRequest.duration;
+    await leaveBalance.save();
+
+    // Update leave request
+    leaveRequest.status = "reversed";
+    leaveRequest.reason = "Leave reversed by admin";
+    leaveRequest.leaveSummary = {
+      balanceBeforeLeave: leaveBalance.balance,
+      balanceAfterLeave: leaveBalance.balance,
+      remainingDays: leaveBalance.balance,
+    };
+
+    try {
+      const emailObject = this.createEmailObject(leaveRequest, employee);
+      await mailService.sendLeaveReversalEmailToEmployeeFromAdmin(emailObject);
+    } catch (error) {
+      console.error("Failed to send leave reversal email:", error);
+    }
+
+    await leaveRequest.save();
+  }
 
   async deleteLeaveRequest(leaveId: string, clientId: string) {
     if (!leaveId) {
