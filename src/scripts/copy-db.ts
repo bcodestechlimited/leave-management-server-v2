@@ -3,6 +3,11 @@ import { MongoClient } from "mongodb";
 async function copyDatabase() {
   const client = new MongoClient(env.MONGODB_URI);
 
+  if (process.versions.bun) {
+    const dns = await import("node:dns");
+    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  }
+
   try {
     await client.connect();
     console.log("✅ Connected to MongoDB");
@@ -41,7 +46,7 @@ async function copyDatabase() {
         }
 
         console.log(
-          `✅ Copied ${documents.length} documents into ${collectionName}`
+          `✅ Copied ${documents.length} documents into ${collectionName}`,
         );
       } else {
         console.log(`⚠️ No documents found in ${collectionName}`);

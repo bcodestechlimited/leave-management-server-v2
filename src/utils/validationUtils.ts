@@ -11,8 +11,6 @@ export async function hashPassword(password: string): Promise<string> {
     cost: 10,
   });
 
-  console.log({ hashPassworddddd: hashedPassword });
-
   return hashedPassword;
 }
 

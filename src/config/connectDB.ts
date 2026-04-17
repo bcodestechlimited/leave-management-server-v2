@@ -10,6 +10,11 @@ const connectDB = async () => {
     return;
   }
 
+  if (process.versions.bun) {
+    const dns = await import("node:dns");
+    dns.setServers(["8.8.8.8", "8.8.4.4", "1.1.1.1"]);
+  }
+
   try {
     logger.info("Connecting...");
     await mongoose.connect(env.MONGODB_URI, {

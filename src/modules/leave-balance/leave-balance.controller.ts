@@ -3,7 +3,7 @@ import { leaveBalanceService } from "./leave-balance.service";
 
 export class LeaveBalanceController {
   // ============================
-  // Leave Requests
+  // Leave Balance
   // ============================
 
   async getLeaveBalance(req: Request, res: Response) {
@@ -13,7 +13,7 @@ export class LeaveBalanceController {
     const result = await leaveBalanceService.getLeaveBalance(
       clientId,
       employeeId,
-      query
+      query,
     );
     res.status(200).json(result);
   }
@@ -24,7 +24,7 @@ export class LeaveBalanceController {
     const result = await leaveBalanceService.getSingleLeaveBalance(
       clientId,
       employeeId as string,
-      leaveBalanceId as string
+      leaveBalanceId as string,
     );
     res.status(200).json(result);
   }
@@ -37,7 +37,26 @@ export class LeaveBalanceController {
       clientId,
       employeeId as string,
       leaveBalanceId as string,
-      leaveBalanceData
+      leaveBalanceData,
+    );
+    res.status(200).json(result);
+  }
+
+  // ============================
+  // Employee Leave Balance (Admin)
+  // ============================
+
+  async getEmployeeLeaveBalancesForAdmin(req: Request, res: Response) {
+    const { clientId } = req.client;
+    const { employeeId } = req.params as { employeeId: string }; // Employee making the request
+    const query = req.query;
+
+    console.log({ employeeId });
+
+    const result = await leaveBalanceService.getLeaveBalance(
+      clientId,
+      employeeId,
+      query,
     );
     res.status(200).json(result);
   }

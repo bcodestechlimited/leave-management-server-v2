@@ -111,12 +111,16 @@ const employeeSchema: Schema<IEmployee> = new Schema(
       ref: "Level",
       default: null,
     },
+    employmentStartDate: {
+      type: Date,
+      default: null,
+    },
     atsInfo: {
       type: Object,
       default: {},
     },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // ------------------------------------------------------
@@ -171,7 +175,7 @@ employeeSchema.pre("findOneAndUpdate", async function (next) {
 
 async function updateLeaveBalances(
   employee: IEmployee,
-  newLevelId = employee.levelId
+  newLevelId = employee.levelId,
 ) {
   console.log({
     levelId: String(employee.levelId),
@@ -180,7 +184,7 @@ async function updateLeaveBalances(
 
   if (newLevelId === null || String(newLevelId) === String(employee.levelId)) {
     logger.info(
-      `No change in levelId for employee, Employee levelId: ${employee.levelId} newLevelId: ${newLevelId} /n Skipping leave balance update.`
+      `No change in levelId for employee, Employee levelId: ${employee.levelId} newLevelId: ${newLevelId} /n Skipping leave balance update.`,
     );
     return;
   }

@@ -22,6 +22,7 @@ import LeaveBalance from "../leave-balance/leave-balance.model.js";
 import { otpService } from "../otp/otp.service.js";
 import type { IQueryParams } from "@/shared/interfaces/query.interface.js";
 import { env } from "@/config/env.config.js";
+import { analytics } from "googleapis/build/src/apis/analytics/index.js";
 
 export class EmployeeService {
   // ---------------- AUTH ----------------
@@ -70,7 +71,7 @@ export class EmployeeService {
   // ---------------- INVITES ----------------
   async sendInviteToEmployee(
     inviteData: { email: string; expiresIn: number },
-    clientId: string
+    clientId: string,
   ) {
     const { email, expiresIn } = inviteData;
     if (!email || !clientId)
@@ -91,7 +92,7 @@ export class EmployeeService {
     // Already accepted
     if (existingLink && existingLink.status === "accepted") {
       return ApiSuccess.ok(
-        `Invite already accepted for ${email}. No action taken.`
+        `Invite already accepted for ${email}. No action taken.`,
       );
     }
 
@@ -133,7 +134,7 @@ export class EmployeeService {
         plainPassword,
         client.name,
         inviteUrl,
-        token
+        token,
       );
       return ApiSuccess.ok(`Invite link sent to ${email}`);
     }
@@ -152,10 +153,10 @@ export class EmployeeService {
         plainPassword,
         client.name,
         inviteUrl,
-        token
+        token,
       );
       return ApiSuccess.ok(
-        `New password sent using active invite link for ${email}`
+        `New password sent using active invite link for ${email}`,
       );
     }
 
@@ -181,7 +182,7 @@ export class EmployeeService {
       plainPassword,
       client.name,
       inviteUrl,
-      token
+      token,
     );
     return ApiSuccess.ok(`New invite link sent to ${email}`);
   }
@@ -213,7 +214,7 @@ export class EmployeeService {
   async InviteAndAddEmployee(
     InviteData: any,
     employeeId: string,
-    clientId: string
+    clientId: string,
   ) {
     const { email, firstname, middlename, surname, accountType } = InviteData;
 
@@ -348,12 +349,55 @@ export class EmployeeService {
       // stats,
     });
   }
+  async getEmployeesAnalytics(clientId: string, query: IQueryParams) {
+    const result = await Employee.aggregate([
+      {
+        $match: {
+          accountType: "employee",
+        },
+      },
+      {
+        $group: {
+          _id: "$clientId",
+          totalEmployees: { $sum: 1 },
+        },
+      },
+      {
+        $lookup: {
+          from: "clients", // ⚠️ make sure this matches your collection name
+          localField: "_id",
+          foreignField: "_id",
+          as: "client",
+        },
+      },
+      {
+        $unwind: "$client",
+      },
+      {
+        $project: {
+          _id: 0,
+          clientId: "$_id",
+          clientName: "$client.name", // adjust if your field is different
+          totalEmployees: 1,
+        },
+      },
+      {
+        $sort: { totalEmployees: -1 },
+      },
+    ]);
+
+    // const stats = await Employee.getEmployeeStats();
+
+    return ApiSuccess.ok("Employees Retrieved Successfully", {
+      analytics: result,
+    });
+  }
 
   async updateEmployee(
     employeeId: string,
     clientId: string,
     profileData: Partial<IEmployee>,
-    files?: { file?: UploadedFile; avatar?: UploadedFile }
+    files?: { file?: UploadedFile; avatar?: UploadedFile },
   ) {
     const { file, avatar } = files || {};
 
@@ -370,7 +414,7 @@ export class EmployeeService {
 
     if (avatar) {
       const response = await uploadService.uploadToCloudinary(
-        avatar.tempFilePath
+        avatar.tempFilePath,
       );
 
       avatarUrl = response?.secure_url || "";
@@ -383,7 +427,7 @@ export class EmployeeService {
     const employee = await Employee.findOneAndUpdate(
       { _id: employeeId, clientId },
       updatePayload,
-      { new: true, runValidators: true }
+      { new: true, runValidators: true },
     ).populate(["lineManager", "reliever", "clientId"]);
 
     if (!employee) throw ApiError.badRequest("Employee not found");
@@ -407,11 +451,11 @@ export class EmployeeService {
     await Leave.updateMany({ employeeId }, { $set: { employeeId: null } });
     await Employee.updateMany(
       { lineManager: employeeId },
-      { $set: { lineManager: null } }
+      { $set: { lineManager: null } },
     );
     await Employee.updateMany(
       { reliever: employeeId },
-      { $set: { reliever: null } }
+      { $set: { reliever: null } },
     );
 
     return ApiSuccess.ok("Employee deleted successfully");
@@ -480,19 +524,19 @@ export class EmployeeService {
     // 2. Remove the employee as lineManager or reliever from other employees
     await Employee.updateMany(
       { lineManager: employeeId, clientId },
-      { $unset: { lineManager: "" } }
+      { $unset: { lineManager: "" } },
     );
 
     await Employee.updateMany(
       { reliever: employeeId, clientId },
-      { $unset: { reliever: "" } }
+      { $unset: { reliever: "" } },
     );
 
     // 3. Finally delete the employee
     await Employee.deleteOne({ _id: employeeId, clientId });
 
     return ApiSuccess.ok(
-      "Employee deleted successfully and removed as Line Manager/Reliever from others"
+      "Employee deleted successfully and removed as Line Manager/Reliever from others",
     );
   }
 
@@ -535,7 +579,7 @@ export class EmployeeService {
     if (!passwordReset) throw ApiError.badRequest("Invalid or expired link");
 
     const employee = await Employee.findOne({ email: decoded.email }).select(
-      "+password"
+      "+password",
     );
     if (!employee) throw ApiError.notFound("User not found");
 
@@ -552,7 +596,7 @@ export class EmployeeService {
     password: string,
     clientName: string,
     inviteUrl: string,
-    token: string
+    token: string,
   ) {
     const mailOptions = {
       from: process.env.ADMIN_EMAIL,

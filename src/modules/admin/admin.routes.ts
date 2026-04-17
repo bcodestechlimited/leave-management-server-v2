@@ -8,6 +8,7 @@ import { employeeController } from "../employee/employee.controller";
 import { employeeSchemas } from "../employee/employee.schema";
 import { adminController } from "./admin.controller";
 import { clientMiddleware } from "@/middleware/client.middleware";
+import { leaveBalanceController } from "../leave-balance/leave-balance.controller";
 
 const router = express.Router();
 
@@ -174,7 +175,7 @@ router
 
 router
   .route("/employee")
-  .get(isAuth, isAdmin, employeeController.getEmployees)
+  .get(clientMiddleware, isAuth, isAdmin, employeeController.getEmployees)
   .post(
     isAuth,
     isAdmin,
@@ -184,13 +185,28 @@ router
   .all(methodNotAllowed);
 
 router
+  .route("/employee/analytics")
+  .get(clientMiddleware, isAuth, isAdmin, employeeController.getEmployeesAnalytics)
+  .all(methodNotAllowed);
+
+router
   .route("/employee/:employeeId")
-  .get(isAuth, isAdmin, employeeController.getEmployee)
+  .get(clientMiddleware, isAuth, isAdmin, employeeController.getEmployee)
   .put(
     isAuth,
     isAdmin,
     validateBody(employeeSchemas.employeeProfileUpdate),
     employeeController.updateEmployee,
+  )
+  .all(methodNotAllowed);
+
+router
+  .route("/employee/:employeeId/leave-balances")
+  .get(
+    clientMiddleware,
+    isAuth,
+    isAdmin,
+    leaveBalanceController.getEmployeeLeaveBalancesForAdmin,
   )
   .all(methodNotAllowed);
 

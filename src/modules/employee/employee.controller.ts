@@ -44,7 +44,17 @@ export class EmployeeController {
     const query = req.query;
     const result = await employeeService.getEmployees(
       clientId as string,
-      query
+      query,
+    );
+    res.status(200).json(result);
+  }
+
+  async getEmployeesAnalytics(req: Request, res: Response) {
+    const { clientId } = req.client;
+    const query = req.query;
+    const result = await employeeService.getEmployeesAnalytics(
+      clientId as string,
+      query,
     );
     res.status(200).json(result);
   }
@@ -69,7 +79,7 @@ export class EmployeeController {
       employeeId,
       clientId,
       profileData,
-      files ?? {}
+      files ?? {},
     );
 
     res.status(200).json(result);
@@ -79,8 +89,8 @@ export class EmployeeController {
     const { clientId } = req.client;
     const { employeeId } = req.params;
     const result = await employeeService.getEmployee(
+      clientId,
       employeeId as string,
-      clientId
     );
     res.status(200).json(result);
   }
@@ -97,7 +107,7 @@ export class EmployeeController {
       employeeId as string,
       clientId,
       profileData,
-      files
+      files,
     );
 
     res.status(200).json(result);
@@ -108,7 +118,7 @@ export class EmployeeController {
     const { employeeId } = req.params;
     const result = await employeeService.deleteEmployee(
       employeeId as string,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -122,7 +132,7 @@ export class EmployeeController {
     const { clientId } = req.client;
     const result = await employeeService.sendInviteToEmployee(
       inviteData,
-      clientId
+      clientId,
     );
     res.status(201).json(result);
   }
@@ -132,7 +142,7 @@ export class EmployeeController {
     const { token } = req.query;
     const result = await employeeService.acceptInvite(
       token as string,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -151,7 +161,7 @@ export class EmployeeController {
     const result = await employeeService.InviteAndAddEmployee(
       inviteData,
       employeeId,
-      clientId
+      clientId,
     );
     res.status(201).json(result);
   }
@@ -172,7 +182,7 @@ export class EmployeeController {
     const { employeeId } = req.params;
     const result = await employeeService.deleteLineManager(
       employeeId as string,
-      clientId
+      clientId,
     );
     res.status(201).json(result);
   }

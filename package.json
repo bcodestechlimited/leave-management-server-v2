@@ -16,7 +16,9 @@
     "scripts:reset-all-leave-balance": "bun run src/scripts/reset-all-leave-balance.ts",
     "script:test": "bun run src/scripts/test.ts",
     "scripts:create-module": "bun run /src/scripts/create-module.ts",
-    "scripts:reset-password": "bun run /src/scripts/reset-password.ts"
+    "scripts:reset-password": "bun run /src/scripts/reset-password.ts",
+    "scripts:bulk-invite": "bun run /src/scripts/bulk-invite.ts",
+    "scripts:hired": "bun run /src/scripts/hired-date.ts"
   },
   "devDependencies": {
     "@types/bun": "latest"
@@ -57,6 +59,7 @@
     "pino-http": "^10.4.0",
     "pino-pretty": "^13.0.0",
     "socket.io": "^4.8.1",
+    "xlsx": "^0.18.5",
     "zod": "^3.24.2"
   }
 }

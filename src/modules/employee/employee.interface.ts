@@ -28,6 +28,7 @@ export interface IEmployee extends Document {
   lineManager?: IEmployee | null;
   reliever?: IEmployee | null;
   levelId?: Types.ObjectId | null;
+  employmentStartDate: Date | null;
   atsInfo?: Record<string, any>;
 
   createdAt?: Date;

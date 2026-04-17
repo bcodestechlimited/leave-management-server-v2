@@ -72,7 +72,7 @@ export class AdminController {
     const { clientId, year } = req.query;
     const result = await leaveService.getLeaveRequestAnalytics(
       clientId as string,
-      year as string
+      year as string,
     );
     res.status(200).json(result);
   }
@@ -86,7 +86,7 @@ export class AdminController {
     const { leaveRequestId } = req.params;
     const result = await leaveService.getSingleLeaveRequest(
       leaveRequestId as string,
-      clientId
+      clientId,
     );
     res.status(200).json(result);
   }
@@ -97,7 +97,7 @@ export class AdminController {
     const result = await leaveService.updateLeaveRequestBySuperAdmin(
       clientId as string,
       leaveRequestId as string,
-      leaveRequestData
+      leaveRequestData,
     );
     res.status(200).json(result);
   }

@@ -126,6 +126,15 @@ class EmployeeSchemas {
         .boolean()
         .optional()
         .describe("isAdmin must be a boolean value (true or false)"),
+      employmentStartDate: z.preprocess(
+        (val) => (val === "" ? null : val),
+        z.coerce
+          .date({
+            invalid_type_error: "Start date must be a valid date",
+          })
+          .nullable()
+          .optional(),
+      ),
     })
     .strict();
 
